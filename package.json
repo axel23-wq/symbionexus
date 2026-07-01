@@ -1,0 +1,27 @@
+{
+  "name": "symbionexus",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SymbioNexus — La Marketplace Industrielle Intelligente de l'Économie Circulaire",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:web\" \"npm run dev:api\"",
+    "dev:web": "npm -w apps/web run dev",
+    "dev:api": "npm -w apps/api run start:dev",
+    "build": "npm -w apps/web run build",
+    "lint": "npm -w apps/web run lint",
+    "db:push": "npm -w apps/api run db:push",
+    "db:seed": "npm -w apps/api run db:seed",
+    "db:studio": "npm -w apps/api run db:studio"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "dependencies": {
+    "@ai-sdk/react": "^4.0.7",
+    "ai": "^7.0.6"
+  }
+}

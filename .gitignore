@@ -1,0 +1,38 @@
+# ── Dépendances ──────────────────────────────
+node_modules/
+**/node_modules/
+.pnp
+.pnp.js
+
+# ── Secrets / environnement ──────────────────
+.env
+.env.local
+.env.*.local
+**/.env
+!**/.env.example
+
+# ── Builds ───────────────────────────────────
+**/dist/
+**/.next/
+**/out/
+**/build/
+*.tsbuildinfo
+next-env.d.ts
+
+# ── Base de données locale (SQLite) ──────────
+apps/api/prisma/*.db
+apps/api/prisma/*.db-journal
+*.sqlite
+*.sqlite3
+
+# ── Divers ───────────────────────────────────
+.DS_Store
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.vercel
+.turbo
+coverage/
+*.zip
+.playwright-mcp/
