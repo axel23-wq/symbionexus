@@ -14,20 +14,25 @@ export default function InstallPWAButton() {
   const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
-    const ua = window.navigator.userAgent || '';
-    const iOS = /iPad|iPhone|iPod/.test(ua) && !(window as any).MSStream;
-    setIsIOS(iOS);
+    // Defer client feature-detection one frame so setState isn't synchronous
+    // inside the effect (avoids React cascading-render warning).
+    const raf = requestAnimationFrame(() => {
+      const ua = window.navigator.userAgent || '';
+      const iOS = /iPad|iPhone|iPod/.test(ua) && !(window as any).MSStream;
+      setIsIOS(iOS);
 
-    const standalone =
-      window.matchMedia?.('(display-mode: standalone)').matches ||
-      (window.navigator as any).standalone === true;
-    if (standalone) setHidden(true);
+      const standalone =
+        window.matchMedia?.('(display-mode: standalone)').matches ||
+        (window.navigator as any).standalone === true;
+      if (standalone) setHidden(true);
+    });
 
     const onPrompt = (e: any) => { e.preventDefault(); setDeferred(e); };
     const onInstalled = () => { setDeferred(null); setHidden(true); };
     window.addEventListener('beforeinstallprompt', onPrompt);
     window.addEventListener('appinstalled', onInstalled);
     return () => {
+      cancelAnimationFrame(raf);
       window.removeEventListener('beforeinstallprompt', onPrompt);
       window.removeEventListener('appinstalled', onInstalled);
     };

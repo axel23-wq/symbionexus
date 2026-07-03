@@ -1,0 +1,17 @@
+{
+  "nav.dashboard": "仪表板",
+  "nav.marketplace": "市场",
+  "nav.listings": "我的广告",
+  "nav.matches": "AI 匹配",
+  "nav.contracts": "合同",
+  "nav.passports": "护照",
+  "nav.carbon": "碳积分",
+  "nav.messages": "消息",
+  "nav.settings": "设置",
+  "settings.title": "设置",
+  "settings.tab.profile": "公司身份",
+  "settings.tab.appearance": "语言与主题",
+  "settings.tab.notifications": "通知",
+  "settings.tab.developer": "开发者",
+  "settings.tab.security": "安全"
+}

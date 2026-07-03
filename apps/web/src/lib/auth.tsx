@@ -40,16 +40,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    const savedUser = localStorage.getItem('user');
-    if (token && savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch {
-        localStorage.clear();
+    // Defer one frame so bootstrap setState isn't synchronous inside the effect
+    // (avoids React cascading-render warning while staying hydration-safe).
+    const raf = requestAnimationFrame(() => {
+      const token = localStorage.getItem('accessToken');
+      const savedUser = localStorage.getItem('user');
+      if (token && savedUser) {
+        try {
+          setUser(JSON.parse(savedUser));
+        } catch {
+          localStorage.clear();
+        }
       }
-    }
-    setIsLoading(false);
+      setIsLoading(false);
+    });
+    return () => cancelAnimationFrame(raf);
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {

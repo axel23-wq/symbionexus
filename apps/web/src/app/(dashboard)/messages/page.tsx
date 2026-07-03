@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 
@@ -12,17 +12,7 @@ export default function MessagesPage() {
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    loadConversations();
-  }, []);
-
-  useEffect(() => {
-    if (activePartnerId) {
-      loadMessages(activePartnerId);
-    }
-  }, [activePartnerId]);
-
-  const loadConversations = async () => {
+  const loadConversations = useCallback(async () => {
     try {
       const result = await api.getConversations();
       setConversations(result.data || []);
@@ -31,16 +21,28 @@ export default function MessagesPage() {
       }
     } catch (err) { console.error(err); }
     finally { setIsLoading(false); }
-  };
+  }, [activePartnerId]);
 
-  const loadMessages = async (partnerId: string) => {
+  const loadMessages = useCallback(async (partnerId: string) => {
     try {
       const result = await api.getConversation(partnerId);
       setMessages(result.data || []);
       // Mark as read
       await api.request(`/messages/read/${partnerId}`, { method: 'PATCH' });
     } catch (err) { console.error(err); }
-  };
+  }, []);
+
+  // Load conversation list once on mount.
+  useEffect(() => {
+    loadConversations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (activePartnerId) {
+      loadMessages(activePartnerId);
+    }
+  }, [activePartnerId, loadMessages]);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();

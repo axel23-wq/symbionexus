@@ -52,15 +52,15 @@ export class RegisterDto {
   @IsString()
   companySector: string;
 
-  @ApiProperty({ example: '45 Rue de l\'Innovation, 69001 Lyon' })
+  @ApiProperty({ example: 'Zone Industrielle de Bassa, BP 4011 Douala' })
   @IsString()
   companyAddress: string;
 
-  @ApiProperty({ example: 'Lyon' })
+  @ApiProperty({ example: 'Douala' })
   @IsString()
   companyCity: string;
 
-  @ApiProperty({ example: 'France' })
+  @ApiProperty({ example: 'Cameroun' })
   @IsString()
   companyCountry: string;
 

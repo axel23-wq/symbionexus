@@ -5,52 +5,52 @@ import * as QRCode from 'qrcode';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌿 Seeding SymbioNexus database...\n');
+  console.log('🌿 Seeding SymbioNexus database (Cameroun)...\n');
 
   // ============ COMPANIES ============
   const companies = await Promise.all([
     prisma.company.create({
       data: {
-        name: 'CaféVert Industries',
-        // siret: '12345678901234',
+        name: 'CaféVert Cameroun',
+        // niu: 'M081512345678A',
         companySector: 'Agroalimentaire',
-        companyAddress: '45 Rue de l\'Innovation',
-        companyCity: 'Lyon',
-        companyCountry: 'France',
-        companyLatitude: 45.7578,
-        companyLongitude: 4.8320,
+        companyAddress: 'Zone Industrielle de Bassa',
+        companyCity: 'Douala',
+        companyCountry: 'Cameroun',
+        companyLatitude: 4.0511,
+        companyLongitude: 9.7679,
         trustScore: 0.85,
         kybStatus: 'VERIFIED',
-        description: 'Leader de la production de café torréfié en Auvergne-Rhône-Alpes. Produit 5 tonnes de marc de café par semaine.',
+        description: 'Torréfacteur et exportateur de café de la région du Littoral. Produit 5 tonnes de marc de café par semaine.',
         certifications: '["ISO 14001", "Bio"]',
       },
     }),
     prisma.company.create({
       data: {
-        name: 'BioCompost Rhône',
-        // siret: '23456789012345',
+        name: 'BioCompost Littoral',
+        // niu: 'M081523456789B',
         companySector: 'Compostage',
-        companyAddress: '12 Zone Industrielle Nord',
-        companyCity: 'Villeurbanne',
-        companyCountry: 'France',
-        companyLatitude: 45.7676,
-        companyLongitude: 4.8798,
+        companyAddress: 'Quartier Bonabéri, Route de l\'Ouest',
+        companyCity: 'Douala',
+        companyCountry: 'Cameroun',
+        companyLatitude: 4.0800,
+        companyLongitude: 9.7000,
         trustScore: 0.90,
         kybStatus: 'VERIFIED',
-        description: 'Spécialiste du compostage industriel et de la valorisation de biomasse organique.',
-        certifications: '["ISO 14001", "NF Compost"]',
+        description: 'Spécialiste du compostage industriel et de la valorisation de biomasse organique dans le Littoral.',
+        certifications: '["ISO 14001"]',
       },
     }),
     prisma.company.create({
       data: {
-        name: 'PlastiRecycle SAS',
-        // siret: '34567890123456',
+        name: 'PlastiRecycle Cameroun',
+        // niu: 'M081534567890C',
         companySector: 'Recyclage plastique',
-        companyAddress: '8 Boulevard des Usines',
-        companyCity: 'Grenoble',
-        companyCountry: 'France',
-        companyLatitude: 45.1885,
-        companyLongitude: 5.7245,
+        companyAddress: 'Zone Industrielle de Mvan',
+        companyCity: 'Yaoundé',
+        companyCountry: 'Cameroun',
+        companyLatitude: 3.8480,
+        companyLongitude: 11.5021,
         trustScore: 0.75,
         kybStatus: 'VERIFIED',
         description: 'Recyclage de plastiques industriels : PE, PP, PET. Capacité de traitement : 200 tonnes/mois.',
@@ -59,14 +59,14 @@ async function main() {
     }),
     prisma.company.create({
       data: {
-        name: 'Emballages Durand',
-        // siret: '45678901234567',
+        name: 'Emballages du Grassfield',
+        // niu: 'M081545678901D',
         companySector: 'Plasturgie',
-        companyAddress: '22 Rue des Artisans',
-        companyCity: 'Saint-Étienne',
-        companyCountry: 'France',
-        companyLatitude: 45.4397,
-        companyLongitude: 4.3872,
+        companyAddress: 'Marché B, Zone Artisanale',
+        companyCity: 'Bafoussam',
+        companyCountry: 'Cameroun',
+        companyLatitude: 5.4781,
+        companyLongitude: 10.4176,
         trustScore: 0.70,
         kybStatus: 'VERIFIED',
         description: 'Fabrication d\'emballages alimentaires. Cherche à réduire ses coûts de matière première.',
@@ -75,14 +75,14 @@ async function main() {
     }),
     prisma.company.create({
       data: {
-        name: 'MétalFonderie du Sud',
-        // siret: '56789012345678',
+        name: 'MétalFonderie du Littoral',
+        // niu: 'M081556789012E',
         companySector: 'Métallurgie',
-        companyAddress: '3 Impasse de la Forge',
-        companyCity: 'Marseille',
-        companyCountry: 'France',
-        companyLatitude: 43.2965,
-        companyLongitude: 5.3698,
+        companyAddress: 'Zone Portuaire',
+        companyCity: 'Kribi',
+        companyCountry: 'Cameroun',
+        companyLatitude: 2.9391,
+        companyLongitude: 9.9100,
         trustScore: 0.80,
         kybStatus: 'VERIFIED',
         description: 'Fonderie spécialisée dans les alliages aluminium et cuivre. Résidus de copeaux métalliques.',
@@ -91,30 +91,30 @@ async function main() {
     }),
     prisma.company.create({
       data: {
-        name: 'RecyMétal Provence',
-        // siret: '67890123456789',
+        name: 'RecyMétal Centre',
+        // niu: 'M081567890123F',
         companySector: 'Recyclage métaux',
-        companyAddress: '15 Avenue de l\'Industrie',
-        companyCity: 'Aix-en-Provence',
-        companyCountry: 'France',
-        companyLatitude: 43.5297,
-        companyLongitude: 5.4474,
+        companyAddress: 'Route Nationale N°3',
+        companyCity: 'Edéa',
+        companyCountry: 'Cameroun',
+        companyLatitude: 3.8000,
+        companyLongitude: 10.1333,
         trustScore: 0.88,
         kybStatus: 'VERIFIED',
-        description: 'Achat et recyclage de métaux ferreux et non-ferreux. Agréé ICPE.',
-        certifications: '["ISO 14001", "ICPE"]',
+        description: 'Achat et recyclage de métaux ferreux et non-ferreux. Agréé par le MINEPDED.',
+        certifications: '["ISO 14001"]',
       },
     }),
     prisma.company.create({
       data: {
-        name: 'TextiRenov',
-        // siret: '78901234567890',
+        name: 'TextiRenov Bamenda',
+        // niu: 'M081578901234G',
         companySector: 'Recyclage textile',
-        companyAddress: '7 Chemin des Tisseurs',
-        companyCity: 'Toulouse',
-        companyCountry: 'France',
-        companyLatitude: 43.6047,
-        companyLongitude: 1.4442,
+        companyAddress: 'Commercial Avenue',
+        companyCity: 'Bamenda',
+        companyCountry: 'Cameroun',
+        companyLatitude: 5.9631,
+        companyLongitude: 10.1591,
         trustScore: 0.72,
         kybStatus: 'VERIFIED',
         description: 'Collecte et recyclage de textiles industriels et post-consommation.',
@@ -124,17 +124,17 @@ async function main() {
     prisma.company.create({
       data: {
         name: 'TransEco Logistics',
-        // siret: '89012345678901',
+        // niu: 'M081589012345H',
         companySector: 'Transport',
-        companyAddress: '50 Route Nationale',
-        companyCity: 'Valence',
-        companyCountry: 'France',
-        companyLatitude: 44.9334,
-        companyLongitude: 4.8924,
+        companyAddress: 'Carrefour Ndokoti',
+        companyCity: 'Nkongsamba',
+        companyCountry: 'Cameroun',
+        companyLatitude: 4.9547,
+        companyLongitude: 9.9404,
         trustScore: 0.82,
         kybStatus: 'VERIFIED',
         description: 'Transport spécialisé de matières recyclables et déchets industriels. Flotte éco-responsable.',
-        certifications: '["Objectif CO2"]',
+        certifications: '[]',
       },
     }),
     // Admin company
@@ -142,11 +142,11 @@ async function main() {
       data: {
         name: 'SymbioNexus (Admin)',
         companySector: 'Plateforme',
-        companyAddress: '1 Place de l\'Économie Circulaire',
-        companyCity: 'Paris',
-        companyCountry: 'France',
-        companyLatitude: 48.8566,
-        companyLongitude: 2.3522,
+        companyAddress: 'Quartier Bastos',
+        companyCity: 'Yaoundé',
+        companyCountry: 'Cameroun',
+        companyLatitude: 3.8480,
+        companyLongitude: 11.5021,
         trustScore: 1.0,
         kybStatus: 'VERIFIED',
         description: 'Administration de la plateforme SymbioNexus.',
@@ -165,7 +165,7 @@ async function main() {
         email: 'seller@cafvert.fr',
         passwordHash,
         firstName: 'Marie',
-        lastName: 'Dubois',
+        lastName: 'Ngo',
         role: 'SELLER',
         companyId: companies[0].id,
       },
@@ -175,7 +175,7 @@ async function main() {
         email: 'buyer@biocompost.fr',
         passwordHash,
         firstName: 'Pierre',
-        lastName: 'Martin',
+        lastName: 'Mbarga',
         role: 'BUYER',
         companyId: companies[1].id,
       },
@@ -185,7 +185,7 @@ async function main() {
         email: 'buyer@plastirecycle.fr',
         passwordHash,
         firstName: 'Sophie',
-        lastName: 'Bernard',
+        lastName: 'Fotso',
         role: 'BUYER',
         companyId: companies[2].id,
       },
@@ -195,7 +195,7 @@ async function main() {
         email: 'seller@durand.fr',
         passwordHash,
         firstName: 'Luc',
-        lastName: 'Durand',
+        lastName: 'Kamga',
         role: 'SELLER',
         companyId: companies[3].id,
       },
@@ -205,7 +205,7 @@ async function main() {
         email: 'seller@metalfonderie.fr',
         passwordHash,
         firstName: 'Jean',
-        lastName: 'Moreau',
+        lastName: 'Essomba',
         role: 'SELLER',
         companyId: companies[4].id,
       },
@@ -215,7 +215,7 @@ async function main() {
         email: 'buyer@recycmetal.fr',
         passwordHash,
         firstName: 'Claire',
-        lastName: 'Petit',
+        lastName: 'Nkoulou',
         role: 'BUYER',
         companyId: companies[5].id,
       },
@@ -225,7 +225,7 @@ async function main() {
         email: 'buyer@textirenov.fr',
         passwordHash,
         firstName: 'Antoine',
-        lastName: 'Leroy',
+        lastName: 'Tabi',
         role: 'BUYER',
         companyId: companies[6].id,
       },
@@ -235,7 +235,7 @@ async function main() {
         email: 'transport@transeco.fr',
         passwordHash,
         firstName: 'Marc',
-        lastName: 'Faure',
+        lastName: 'Ekwalla',
         role: 'TRANSPORTER',
         companyId: companies[7].id,
       },
@@ -255,7 +255,7 @@ async function main() {
   console.log(`✅ Created ${users.length} users`);
   console.log('   📧 All passwords: Demo2024!\n');
 
-  // ============ WASTE LISTINGS ============
+  // ============ WASTE LISTINGS (prix en FCFA / kg) ============
   const listings = await Promise.all([
     prisma.wasteListing.create({
       data: {
@@ -267,9 +267,9 @@ async function main() {
         volumeKg: 5000,
         frequency: 'WEEKLY',
         chemicalProfile: { humidity: '12%', organicMatter: '85%', nitrogen: '2.3%', pH: 6.2 },
-        pricePerKg: 0.08,
-        latitude: 45.7578,
-        longitude: 4.8320,
+        pricePerKg: 50,
+        latitude: 4.0511,
+        longitude: 9.7679,
         status: 'PUBLISHED',
         photos: '[]',
       },
@@ -284,9 +284,9 @@ async function main() {
         volumeKg: 2000,
         frequency: 'WEEKLY',
         chemicalProfile: { polymer: 'PEBD', purity: '98%', color: 'transparent' },
-        pricePerKg: 0.25,
-        latitude: 45.4397,
-        longitude: 4.3872,
+        pricePerKg: 165,
+        latitude: 5.4781,
+        longitude: 10.4176,
         status: 'PUBLISHED',
         photos: '[]',
       },
@@ -301,9 +301,9 @@ async function main() {
         volumeKg: 3000,
         frequency: 'MONTHLY',
         chemicalProfile: { alloy: 'Al 6061', purity: '95%', form: 'copeaux' },
-        pricePerKg: 1.20,
-        latitude: 43.2965,
-        longitude: 5.3698,
+        pricePerKg: 800,
+        latitude: 2.9391,
+        longitude: 9.9100,
         status: 'PUBLISHED',
         photos: '[]',
       },
@@ -317,9 +317,9 @@ async function main() {
         description: 'Sous-produit de la torréfaction. Riche en fibres et antioxydants. Valorisable en cosmétique, alimentation animale ou compostage.',
         volumeKg: 500,
         frequency: 'MONTHLY',
-        pricePerKg: 0.15,
-        latitude: 45.7578,
-        longitude: 4.8320,
+        pricePerKg: 100,
+        latitude: 4.0511,
+        longitude: 9.7679,
         status: 'PUBLISHED',
         photos: '[]',
       },
@@ -333,9 +333,9 @@ async function main() {
         description: 'Huile de coupe usagée issue des centres d\'usinage. Collecte en fûts de 200L. Nécessite traitement spécialisé.',
         volumeKg: 900,
         frequency: 'MONTHLY',
-        pricePerKg: 0.05,
-        latitude: 43.2965,
-        longitude: 5.3698,
+        pricePerKg: 35,
+        latitude: 2.9391,
+        longitude: 9.9100,
         status: 'PUBLISHED',
         photos: '[]',
       },
@@ -360,11 +360,11 @@ async function main() {
           trustScore: 90,
           totalScore: 92,
         },
-        distanceKm: 4.2,
+        distanceKm: 8.4,
         status: 'CONFIRMED',
       },
     }),
-    // Emballages Durand ↔ PlastiRecycle (chutes PE → recyclage) — great match
+    // Emballages du Grassfield ↔ PlastiRecycle (chutes PE → recyclage) — great match
     prisma.match.create({
       data: {
         listingId: listings[1].id,
@@ -378,7 +378,7 @@ async function main() {
           trustScore: 75,
           totalScore: 78,
         },
-        distanceKm: 85.3,
+        distanceKm: 232.5,
         status: 'PROPOSED',
       },
     }),
@@ -396,7 +396,7 @@ async function main() {
           trustScore: 88,
           totalScore: 88,
         },
-        distanceKm: 26.7,
+        distanceKm: 98.2,
         status: 'PROPOSED',
       },
     }),
@@ -404,15 +404,15 @@ async function main() {
 
   console.log(`✅ Created ${matches.length} matches`);
 
-  // ============ DEMO CONTRACT (CaféVert → BioCompost) ============
+  // ============ DEMO CONTRACT (CaféVert → BioCompost) — prix FCFA ============
   const contract = await prisma.contract.create({
     data: {
       matchId: matches[0].id,
       sellerCompanyId: companies[0].id,
       buyerCompanyId: companies[1].id,
       volumeEngagedKg: 5000,
-      pricePerKg: 0.08,
-      totalPrice: 400,
+      pricePerKg: 50,
+      totalPrice: 250000,
       durationMonths: 12,
       frequency: 'WEEKLY',
       sellerSigned: true,
@@ -444,10 +444,10 @@ async function main() {
       currentLatitude: companies[1].companyLatitude,
       currentLongitude: companies[1].companyLongitude,
       routeWaypoints: [
-        { companyLatitude: 45.7578, companyLongitude: 4.8320, timestamp: new Date().toISOString(), label: 'Départ — CaféVert Industries, Lyon' },
-        { companyLatitude: 45.7600, companyLongitude: 4.8450, timestamp: new Date(Date.now() + 1800000).toISOString(), label: 'Point de transit 1' },
-        { companyLatitude: 45.7650, companyLongitude: 4.8600, timestamp: new Date(Date.now() + 3600000).toISOString(), label: 'Point de transit 2' },
-        { companyLatitude: 45.7676, companyLongitude: 4.8798, timestamp: new Date(Date.now() + 5400000).toISOString(), label: 'Arrivée — BioCompost Rhône, Villeurbanne' },
+        { companyLatitude: 4.0511, companyLongitude: 9.7679, timestamp: new Date().toISOString(), label: 'Départ — CaféVert Cameroun, Douala' },
+        { companyLatitude: 4.0620, companyLongitude: 9.7450, timestamp: new Date(Date.now() + 1800000).toISOString(), label: 'Point de transit 1' },
+        { companyLatitude: 4.0720, companyLongitude: 9.7200, timestamp: new Date(Date.now() + 3600000).toISOString(), label: 'Point de transit 2' },
+        { companyLatitude: 4.0800, companyLongitude: 9.7000, timestamp: new Date(Date.now() + 5400000).toISOString(), label: 'Arrivée — BioCompost Littoral, Douala (Bonabéri)' },
       ],
       estimatedArrival: new Date(Date.now() + 5400000),
       pickupAt: new Date(Date.now() - 7200000),
@@ -480,7 +480,7 @@ async function main() {
         userId: users[0].id,
         type: 'NEW_MATCH',
         title: 'Nouveau match trouvé !',
-        message: 'BioCompost Rhône correspond à 92% avec votre annonce de marc de café.',
+        message: 'BioCompost Littoral correspond à 92% avec votre annonce de marc de café.',
         data: { matchId: matches[0].id },
       },
     }),
@@ -508,7 +508,7 @@ async function main() {
 
   // ============ SUMMARY ============
   console.log('═══════════════════════════════════════════');
-  console.log('  🌿 SymbioNexus Database Seeded!');
+  console.log('  🌿 SymbioNexus Database Seeded! (Cameroun)');
   console.log('═══════════════════════════════════════════');
   console.log('');
   console.log('  Demo Accounts (password: Demo2024!):');
@@ -519,7 +519,7 @@ async function main() {
   console.log('  🔑 Admin:       admin@symbionexus.com');
   console.log('');
   console.log('  Pre-built demo flow:');
-  console.log('  CaféVert (seller) → BioCompost (buyer)');
+  console.log('  CaféVert (Douala) → BioCompost (Douala)');
   console.log('  Marc de café → Compostage');
   console.log('  Contract signed, passport delivered,');
   console.log('  4.0 tonnes CO₂ avoided ✅');

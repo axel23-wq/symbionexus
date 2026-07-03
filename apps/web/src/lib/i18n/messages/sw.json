@@ -1,0 +1,17 @@
+{
+  "nav.dashboard": "Dashibodi",
+  "nav.marketplace": "Soko",
+  "nav.listings": "Matangazo yangu",
+  "nav.matches": "Ulinganishaji wa AI",
+  "nav.contracts": "Mikataba",
+  "nav.passports": "Pasipoti",
+  "nav.carbon": "Mikopo ya Kaboni",
+  "nav.messages": "Ujumbe",
+  "nav.settings": "Mipangilio",
+  "settings.title": "Mipangilio",
+  "settings.tab.profile": "Utambulisho wa kampuni",
+  "settings.tab.appearance": "Lugha na Mandhari",
+  "settings.tab.notifications": "Arifa",
+  "settings.tab.developer": "Msanidi programu",
+  "settings.tab.security": "Usalama"
+}

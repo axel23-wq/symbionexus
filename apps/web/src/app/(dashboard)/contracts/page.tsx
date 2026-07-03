@@ -1,39 +1,45 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
-import Link from 'next/link';
+import { waLink, CONTACT_PHONE_INTL } from '@/lib/contact';
 
 export default function ContractsPage() {
   const { user } = useAuth();
   const [contracts, setContracts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [busyAction, setBusyAction] = useState<'sign' | 'passport' | null>(null);
 
-  useEffect(() => { loadContracts(); }, []);
-
-  const loadContracts = async () => {
+  const loadContracts = useCallback(async () => {
     try {
       const result = await api.getMyContracts();
       setContracts(result.data || []);
     } catch (err) { console.error(err); }
     finally { setIsLoading(false); }
-  };
+  }, []);
+
+  useEffect(() => { loadContracts(); }, [loadContracts]);
 
   const handleSign = async (id: string) => {
+    setBusyId(id); setBusyAction('sign');
     try {
       await api.signContract(id);
-      loadContracts();
+      await loadContracts();
     } catch (err) { console.error(err); }
+    finally { setBusyId(null); setBusyAction(null); }
   };
 
   const handleCreatePassport = async (contractId: string) => {
+    setBusyId(contractId); setBusyAction('passport');
     try {
+      // Backend idempotent : réutilise le passeport existant, sinon le crée.
       const result = await api.createPassport(contractId);
-      if (result.data) {
-        window.location.href = `/passports/${result.data.id}`;
-      }
+      const pid = result?.data?.id;
+      if (pid) { window.location.href = `/passports/${pid}`; return; }
     } catch (err) { console.error(err); }
+    setBusyId(null); setBusyAction(null);
   };
 
   const getStatusBadge = (status: string) => {
@@ -111,11 +117,11 @@ export default function ContractsPage() {
                       </div>
                       <div>
                         <span style={{ color: 'var(--color-text-muted)' }}>Prix/kg : </span>
-                        <span style={{ fontWeight: 600, color: '#f59e0b' }}>{contract.pricePerKg?.toFixed(2)}€</span>
+                        <span style={{ fontWeight: 600, color: '#f59e0b' }}>{contract.pricePerKg} FCFA</span>
                       </div>
                       <div>
                         <span style={{ color: 'var(--color-text-muted)' }}>Total : </span>
-                        <span style={{ fontWeight: 700, color: 'var(--color-primary-400)' }}>{contract.totalPrice?.toFixed(0)}€</span>
+                        <span style={{ fontWeight: 700, color: 'var(--color-primary-400)' }}>{contract.totalPrice?.toLocaleString('fr-FR')} FCFA</span>
                       </div>
                       <div>
                         <span style={{ color: 'var(--color-text-muted)' }}>Durée : </span>
@@ -139,19 +145,31 @@ export default function ContractsPage() {
                       <button
                         className="btn-primary"
                         style={{ padding: '10px 20px', fontSize: '0.85rem' }}
+                        disabled={busyId === contract.id}
                         onClick={() => handleSign(contract.id)}
                       >
-                        ✍️ Signer
+                        {busyId === contract.id && busyAction === 'sign' ? '⏳ Signature…' : '✍️ Signer'}
                       </button>
                     )}
                     {contract.status === 'SIGNED' && (
                       <button
                         className="btn-primary"
                         style={{ padding: '10px 20px', fontSize: '0.85rem' }}
+                        disabled={busyId === contract.id}
                         onClick={() => handleCreatePassport(contract.id)}
                       >
-                        📦 Créer passeport
+                        {busyId === contract.id && busyAction === 'passport' ? '⏳ Création…' : '📦 Créer passeport'}
                       </button>
+                    )}
+                    {(contract.status === 'SIGNED' || contract.status === 'IN_PROGRESS' || contract.status === 'COMPLETED') && (
+                      <a
+                        href={waLink(`Bonjour, je souhaite régler mon contrat SymbioNexus « ${contract.match?.listing?.title || contract.id} » — Total ${contract.totalPrice?.toLocaleString('fr-FR')} FCFA — par Mobile Money (Orange Money ${CONTACT_PHONE_INTL}).`)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ textDecoration: 'none', textAlign: 'center', padding: '10px 20px', fontSize: '0.85rem', fontWeight: 600, borderRadius: 12, background: 'linear-gradient(135deg,#f97316,#ea580c)', color: '#fff', whiteSpace: 'nowrap' }}
+                      >
+                        💳 Payer (Mobile Money)
+                      </a>
                     )}
                   </div>
                 </div>

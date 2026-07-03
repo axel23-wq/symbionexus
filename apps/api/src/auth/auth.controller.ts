@@ -12,7 +12,7 @@ export class AuthController {
   @Post('register')
   @ApiOperation({ summary: 'Inscrire une nouvelle entreprise et son utilisateur' })
   @ApiResponse({ status: 201, description: 'Compte créé avec succès' })
-  @ApiResponse({ status: 409, description: 'Email ou SIRET déjà utilisé' })
+  @ApiResponse({ status: 409, description: 'Email ou NIU déjà utilisé' })
   async register(@Body() dto: RegisterDto) {
     const result = await this.authService.register(dto);
     return {
@@ -27,8 +27,9 @@ export class AuthController {
   @ApiOperation({ summary: 'Connexion avec email et mot de passe' })
   @ApiResponse({ status: 200, description: 'Connexion réussie' })
   @ApiResponse({ status: 401, description: 'Identifiants incorrects' })
-  async login(@Body() dto: LoginDto) {
-    const result = await this.authService.login(dto);
+  async login(@Body() dto: LoginDto, @Req() req: any) {
+    const ip = req.headers['x-forwarded-for'] || req.ip;
+    const result = await this.authService.login(dto, ip);
     return {
       success: true,
       data: result,

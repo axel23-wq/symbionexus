@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
 import InstallPWAButton from '@/components/InstallPWAButton';
+import { LanguageProvider } from '@/lib/i18n/LanguageProvider';
+import { ThemeProvider } from '@/lib/theme/ThemeProvider';
+import { QueryProvider } from '@/lib/QueryProvider';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -35,12 +38,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (!isAuthenticated) return null;
 
   return (
-    <div>
-      <Sidebar />
-      <main className="main-content">
-        {children}
-      </main>
-      <InstallPWAButton />
-    </div>
+    <ThemeProvider>
+      <LanguageProvider>
+        <QueryProvider>
+          <div>
+            <Sidebar />
+            <main className="main-content">
+              {children}
+            </main>
+            <InstallPWAButton />
+          </div>
+        </QueryProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }

@@ -92,7 +92,7 @@ export default function RealMap({ listings, center, radiusKm }: RealMapProps) {
                   {l.materialCategory} · {l.volumeKg >= 1000 ? `${l.volumeKg / 1000}t` : `${l.volumeKg} kg`}
                 </div>
                 <div style={{ fontSize: 12, marginTop: 2 }}>
-                  {l.pricePerKg ? `${l.pricePerKg} €/kg` : 'Prix à débattre'}
+                  {l.pricePerKg ? `${l.pricePerKg} FCFA/kg` : 'Prix à débattre'}
                 </div>
               </div>
             </Popup>

@@ -158,7 +158,7 @@ export default function LoginPage() {
             fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em',
             color: 'var(--color-text-muted)', fontWeight: 700, marginBottom: '12px', textAlign: 'center',
           }}>
-            Comptes démo (mot de passe : Demo2024!)
+
           </p>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
             {demoAccounts.map((acc, i) => (

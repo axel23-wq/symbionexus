@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
 import Link from 'next/link';
 
 const DashboardCharts = dynamic(() => import('@/components/DashboardCharts'), { ssr: false });
+const SymbioNode3D = dynamic(() => import('@/components/SymbioNode3D'), { ssr: false });
 
 interface DashboardData {
   overview: {
@@ -29,11 +30,7 @@ export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    loadDashboard();
-  }, []);
-
-  const loadDashboard = async () => {
+  const loadDashboard = useCallback(async () => {
     try {
       const result = await api.getDashboard();
       setData(result.data);
@@ -42,7 +39,11 @@ export default function DashboardPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadDashboard();
+  }, [loadDashboard]);
 
   const stats = data?.overview
     ? [
@@ -51,7 +52,7 @@ export default function DashboardPage() {
         { icon: '📝', label: 'Contrats actifs', value: data.overview.activeContracts, color: '#8b5cf6' },
         { icon: '✅', label: 'Contrats complétés', value: data.overview.completedContracts, color: '#10b981' },
         { icon: '🌱', label: 'CO₂ évité (t)', value: data.overview.co2Avoided.toFixed(1), color: '#059669' },
-        { icon: '💰', label: 'Revenus (€)', value: data.overview.revenue.toLocaleString('fr-FR'), color: '#f59e0b' },
+        { icon: '💰', label: 'Revenus (FCFA)', value: data.overview.revenue.toLocaleString('fr-FR'), color: '#f59e0b' },
       ]
     : [];
 
@@ -83,6 +84,46 @@ export default function DashboardPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div className="badge badge-primary" style={{ fontSize: '0.8rem', padding: '6px 16px' }}>
             ⭐ Trust Score: {((data?.overview.trustScore || 0.5) * 100).toFixed(0)}%
+          </div>
+        </div>
+      </div>
+
+      {/* Noyau IA de Matchmaking — visualisation 3D */}
+      <style>{`
+        .node-widget { display: grid; grid-template-columns: 1fr 340px; align-items: center; gap: 12px; }
+        @media (max-width: 760px) { .node-widget { grid-template-columns: 1fr; } .node-widget .node-canvas { height: 200px; } }
+      `}</style>
+      <div style={{
+        position: 'relative', borderRadius: 20, overflow: 'hidden', marginBottom: 32,
+        border: '1.5px solid var(--border-subtle)',
+        background: 'radial-gradient(ellipse at 80% 50%, rgba(168,85,247,0.12), transparent 60%), linear-gradient(135deg, rgba(13,148,136,0.12), rgba(10,17,40,0.4))',
+      }}>
+        <div className="node-widget">
+          <div style={{ padding: '28px 32px' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 11, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#34d399', marginBottom: 10 }}>
+              <span>🧠</span> Noyau IA de Matchmaking
+            </div>
+            <h2 style={{ fontSize: 22, fontWeight: 800, color: '#f1f5f9', marginBottom: 8 }}>Flux de matières en temps réel</h2>
+            <p style={{ fontSize: 14, color: '#94a3b8', lineHeight: 1.6, maxWidth: 520 }}>
+              Le noyau analyse en continu vos matières secondaires, l&apos;énergie et la circularité pour proposer les meilleurs appariements industriels.
+            </p>
+            <div style={{ display: 'flex', gap: 28, marginTop: 18 }}>
+              <div>
+                <div style={{ fontSize: 22, fontWeight: 800, color: '#22d3ee' }}>{data?.overview.pendingMatches ?? 0}</div>
+                <div style={{ fontSize: 11, color: '#64748b' }}>Matchs en attente</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 22, fontWeight: 800, color: '#a855f7' }}>{data?.overview.activeListings ?? 0}</div>
+                <div style={{ fontSize: 11, color: '#64748b' }}>Annonces actives</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 22, fontWeight: 800, color: '#34d399' }}>{((data?.overview.trustScore || 0.5) * 100).toFixed(0)}%</div>
+                <div style={{ fontSize: 11, color: '#64748b' }}>Trust Score</div>
+              </div>
+            </div>
+          </div>
+          <div className="node-canvas" style={{ height: 240 }}>
+            <SymbioNode3D variant="widget" />
           </div>
         </div>
       </div>
@@ -223,7 +264,7 @@ export default function DashboardPage() {
                       {contract.status}
                     </div>
                     <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginTop: '4px' }}>
-                      {contract.totalPrice?.toFixed(0)}€
+                      {contract.totalPrice?.toLocaleString('fr-FR')} FCFA
                     </div>
                   </div>
                 </div>

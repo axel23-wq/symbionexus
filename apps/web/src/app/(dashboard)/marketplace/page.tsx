@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import Link from 'next/link';
 
@@ -32,11 +32,7 @@ export default function MarketplacePage() {
   const [activeCategory, setActiveCategory] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    loadListings();
-  }, [activeCategory]);
-
-  const loadListings = async () => {
+  const loadListings = useCallback(async () => {
     setIsLoading(true);
     try {
       const params: Record<string, string> = {};
@@ -49,7 +45,13 @@ export default function MarketplacePage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [activeCategory, searchTerm]);
+
+  // Auto-reload on category change only; search is manual (submit).
+  useEffect(() => {
+    loadListings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeCategory]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -242,7 +244,7 @@ export default function MarketplacePage() {
                       Prix/kg
                     </div>
                     <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#f59e0b' }}>
-                      {listing.pricePerKg ? `${listing.pricePerKg.toFixed(2)}€` : 'À négocier'}
+                      {listing.pricePerKg ? `${listing.pricePerKg} FCFA` : 'À négocier'}
                     </div>
                   </div>
                   <div>
@@ -250,7 +252,7 @@ export default function MarketplacePage() {
                       Localisation
                     </div>
                     <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>
-                      📍 {listing.company?.companyCity || 'France'}
+                      📍 {listing.company?.companyCity || 'Cameroun'}
                     </div>
                   </div>
                 </div>

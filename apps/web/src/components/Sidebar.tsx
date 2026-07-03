@@ -3,24 +3,26 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
+import { useTranslation } from '@/lib/i18n/LanguageProvider';
 
 interface NavItem {
   icon: string;
-  label: string;
+  tkey?: string;
+  label?: string;
   href: string;
   badge?: number;
   roles?: string[];
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { icon: '📊', label: 'Tableau de bord', href: '/dashboard' },
-  { icon: '🏪', label: 'Marketplace', href: '/marketplace' },
-  { icon: '📋', label: 'Mes annonces', href: '/listings', roles: ['SELLER'] },
-  { icon: '🤖', label: 'Matchmaking IA', href: '/matches' },
-  { icon: '📝', label: 'Contrats', href: '/contracts' },
-  { icon: '📦', label: 'Passeports', href: '/passports' },
-  { icon: '🌱', label: 'Crédits Carbone', href: '/carbon' },
-  { icon: '💬', label: 'Messages', href: '/messages' },
+  { icon: '📊', tkey: 'nav.dashboard', href: '/dashboard' },
+  { icon: '🏪', tkey: 'nav.marketplace', href: '/marketplace' },
+  { icon: '📋', tkey: 'nav.listings', href: '/listings', roles: ['SELLER'] },
+  { icon: '🤖', tkey: 'nav.matches', href: '/matches' },
+  { icon: '📝', tkey: 'nav.contracts', href: '/contracts' },
+  { icon: '📦', tkey: 'nav.passports', href: '/passports' },
+  { icon: '🌱', tkey: 'nav.carbon', href: '/carbon' },
+  { icon: '💬', tkey: 'nav.messages', href: '/messages' },
 ];
 
 const ADMIN_ITEMS: NavItem[] = [
@@ -31,6 +33,7 @@ const ADMIN_ITEMS: NavItem[] = [
 export default function Sidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const { t } = useTranslation();
 
   if (!user) return null;
 
@@ -61,7 +64,7 @@ export default function Sidebar() {
             className={`nav-item ${pathname === item.href || pathname.startsWith(item.href + '/') ? 'active' : ''}`}
           >
             <span className="nav-item-icon">{item.icon}</span>
-            <span>{item.label}</span>
+            <span>{item.tkey ? t(item.tkey) : item.label}</span>
             {item.badge && item.badge > 0 && (
               <span className="nav-item-badge">{item.badge}</span>
             )}
@@ -86,8 +89,19 @@ export default function Sidebar() {
         </nav>
       )}
 
+      {/* Paramètres — juste au-dessus du bloc profil */}
+      <div style={{ marginTop: 'auto' }}>
+        <Link
+          href="/settings"
+          className={`nav-item ${pathname === '/settings' || pathname.startsWith('/settings/') ? 'active' : ''}`}
+        >
+          <span className="nav-item-icon">⚙️</span>
+          <span>{t('nav.settings')}</span>
+        </Link>
+      </div>
+
       {/* User profile card at bottom */}
-      <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
+      <div style={{ paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
         <div style={{
           display: 'flex',
           alignItems: 'center',

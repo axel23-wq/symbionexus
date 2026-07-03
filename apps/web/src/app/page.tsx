@@ -8,7 +8,7 @@ const STATS = [
   { value: '4.2K+', label: 'Tonnes CO₂ évitées', icon: '🌱' },
   { value: '320+', label: 'Entreprises connectées', icon: '🏭' },
   { value: '1,200+', label: 'Transactions réalisées', icon: '🔄' },
-  { value: '€2.4M', label: 'Valeur échangée', icon: '💰' },
+  { value: '1,5 Md FCFA', label: 'Valeur échangée', icon: '💰' },
 ];
 
 const FEATURES = [
@@ -54,7 +54,8 @@ export default function LandingPage() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    setIsVisible(true);
+    const raf = requestAnimationFrame(() => setIsVisible(true));
+    return () => cancelAnimationFrame(raf);
   }, []);
 
   return (

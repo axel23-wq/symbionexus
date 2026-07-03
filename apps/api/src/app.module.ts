@@ -12,6 +12,8 @@ import { CarbonModule } from './carbon/carbon.module';
 import { MessagingModule } from './messaging/messaging.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { AuditModule } from './audit/audit.module';
+import { SettingsModule } from './settings/settings.module';
 
 @Module({
   imports: [
@@ -31,6 +33,8 @@ import { DashboardModule } from './dashboard/dashboard.module';
     MessagingModule,
     NotificationsModule,
     DashboardModule,
+    AuditModule,
+    SettingsModule,
   ],
 })
 export class AppModule {}

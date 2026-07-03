@@ -1,32 +1,32 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { use, useCallback, useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-export default function ListingDetailPage({ params }: { params: { id: string } }) {
+export default function ListingDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
   const { user } = useAuth();
   const [listing, setListing] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isMatching, setIsMatching] = useState(false);
 
-  useEffect(() => { loadListing(); }, [params.id]);
-
-  const loadListing = async () => {
+  const loadListing = useCallback(async () => {
     try {
-      const result = await api.getListing(params.id);
+      const result = await api.getListing(id);
       setListing(result.data);
     } catch (err) { console.error(err); }
     finally { setIsLoading(false); }
-  };
+  }, [id]);
+
+  useEffect(() => { loadListing(); }, [loadListing]);
 
   const handleComputeMatches = async () => {
     setIsMatching(true);
     try {
-      await api.computeMatches(params.id);
+      await api.computeMatches(id);
       router.push('/matches');
     } catch (err) { console.error(err); }
     finally { setIsMatching(false); }
@@ -127,7 +127,7 @@ export default function ListingDetailPage({ params }: { params: { id: string } }
                   <div>
                     <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Prix demandé</div>
                     <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#f59e0b' }}>
-                      {listing.pricePerKg ? `${listing.pricePerKg.toFixed(2)}€ / kg` : 'À négocier'}
+                      {listing.pricePerKg ? `${listing.pricePerKg} FCFA / kg` : 'À négocier'}
                     </div>
                   </div>
                 </div>

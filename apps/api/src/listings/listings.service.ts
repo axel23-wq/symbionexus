@@ -191,7 +191,42 @@ export class ListingsService {
       throw new ForbiddenException('Vous n\'êtes pas autorisé à supprimer cette annonce');
     }
 
-    return this.prisma.wasteListing.delete({ where: { id } });
+    // Une annonce peut avoir des matchs → contrats → passeports → crédits carbone
+    // + transactions + messages. Ces FK sont en RESTRICT : on supprime toute la
+    // chaîne de dépendances de bas en haut, dans une transaction atomique.
+    const matches = await this.prisma.match.findMany({
+      where: { listingId: id },
+      select: { id: true },
+    });
+    const matchIds = matches.map((m) => m.id);
+
+    const contracts = matchIds.length
+      ? await this.prisma.contract.findMany({
+          where: { matchId: { in: matchIds } },
+          select: { id: true },
+        })
+      : [];
+    const contractIds = contracts.map((c) => c.id);
+
+    const passports = contractIds.length
+      ? await this.prisma.materialPassport.findMany({
+          where: { contractId: { in: contractIds } },
+          select: { id: true },
+        })
+      : [];
+    const passportIds = passports.map((p) => p.id);
+
+    await this.prisma.$transaction([
+      this.prisma.carbonCredit.deleteMany({ where: { passportId: { in: passportIds } } }),
+      this.prisma.materialPassport.deleteMany({ where: { id: { in: passportIds } } }),
+      this.prisma.transaction.deleteMany({ where: { contractId: { in: contractIds } } }),
+      this.prisma.contract.deleteMany({ where: { id: { in: contractIds } } }),
+      this.prisma.message.deleteMany({ where: { matchId: { in: matchIds } } }),
+      this.prisma.match.deleteMany({ where: { listingId: id } }),
+      this.prisma.wasteListing.delete({ where: { id } }),
+    ]);
+
+    return { id };
   }
 
   /**

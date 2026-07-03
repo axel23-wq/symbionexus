@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Patch, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Body, Res, UseGuards } from '@nestjs/common';
+import type { Response } from 'express';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { PassportsService } from './passports.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -35,6 +36,27 @@ export class PassportsController {
       data: passport,
       message: `Statut mis à jour : ${status}`,
     };
+  }
+
+  @Patch(':id/proof')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Enregistrer la preuve de livraison (signature + photo)' })
+  async proof(
+    @Param('id') id: string,
+    @Body() body: { signature?: string; photo?: string },
+  ) {
+    const passport = await this.passportsService.saveDeliveryProof(id, body.signature, body.photo);
+    return { success: true, data: passport, message: 'Preuve de livraison enregistrée' };
+  }
+
+  @Get(':id/pdf')
+  @ApiOperation({ summary: 'Télécharger le passeport officiel en PDF' })
+  async pdf(@Param('id') id: string, @Res() res: Response) {
+    const { buffer, filename } = await this.passportsService.generatePdf(id);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.end(buffer);
   }
 
   @Get(':id')

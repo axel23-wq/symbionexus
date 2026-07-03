@@ -1,0 +1,17 @@
+{
+  "nav.dashboard": "Painel",
+  "nav.marketplace": "Mercado",
+  "nav.listings": "Meus anúncios",
+  "nav.matches": "Correspondência IA",
+  "nav.contracts": "Contratos",
+  "nav.passports": "Passaportes",
+  "nav.carbon": "Créditos de Carbono",
+  "nav.messages": "Mensagens",
+  "nav.settings": "Definições",
+  "settings.title": "Definições",
+  "settings.tab.profile": "Identidade da empresa",
+  "settings.tab.appearance": "Idioma e Tema",
+  "settings.tab.notifications": "Notificações",
+  "settings.tab.developer": "Programador",
+  "settings.tab.security": "Segurança"
+}

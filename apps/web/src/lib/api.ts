@@ -122,6 +122,10 @@ class ApiClient {
     return this.request<any>(`/listings/${id}/publish`, { method: 'PATCH' });
   }
 
+  async deleteListing(id: string) {
+    return this.request<any>(`/listings/${id}`, { method: 'DELETE' });
+  }
+
   // Matches
   async computeMatches(listingId: string) {
     return this.request<any>(`/matches/compute/${listingId}`, { method: 'POST' });
@@ -231,6 +235,100 @@ class ApiClient {
 
   async getCompany(id: string) {
     return this.request<any>(`/companies/${id}`);
+  }
+
+  // Settings — profil / identité B2B
+  async getSettingsProfile() {
+    return this.request<any>('/settings/profile');
+  }
+
+  async updateCompanyProfile(data: { name?: string; registrationNumber?: string; logoUrl?: string; description?: string }) {
+    return this.request<any>('/settings/company', { method: 'PATCH', body: JSON.stringify(data) });
+  }
+
+  async addCertification(data: { type: string; title: string; fileUrl: string; expiresAt?: string }) {
+    return this.request<any>('/settings/certifications', { method: 'POST', body: JSON.stringify(data) });
+  }
+
+  async deleteCertification(id: string) {
+    return this.request<any>(`/settings/certifications/${id}`, { method: 'DELETE' });
+  }
+
+  // Settings — préférences / notifications
+  async updatePreferences(data: { locale?: string; theme?: string }) {
+    return this.request<any>('/settings/preferences', { method: 'PATCH', body: JSON.stringify(data) });
+  }
+
+  async updateNotifications(prefs: Record<string, boolean>) {
+    return this.request<any>('/settings/notifications', { method: 'PATCH', body: JSON.stringify({ prefs }) });
+  }
+
+  // Settings — passerelle développeur
+  async updateWebhook(webhookUrl: string) {
+    return this.request<any>('/settings/webhook', { method: 'PATCH', body: JSON.stringify({ webhookUrl }) });
+  }
+
+  async listApiKeys() {
+    return this.request<any>('/settings/api-keys');
+  }
+
+  async createApiKey(label: string) {
+    return this.request<any>('/settings/api-keys', { method: 'POST', body: JSON.stringify({ label }) });
+  }
+
+  async revokeApiKey(id: string) {
+    return this.request<any>(`/settings/api-keys/${id}`, { method: 'DELETE' });
+  }
+
+  // Settings — journal d'audit
+  async getAuditLog() {
+    return this.request<any>('/settings/audit');
+  }
+
+  // Passeports — export PDF + preuve de livraison
+  async downloadPassportPdf(id: string) {
+    const res = await fetch(`${this.baseUrl}/passports/${id}/pdf`, { headers: this.getHeaders() });
+    if (!res.ok) throw new Error('Échec de la génération du PDF');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `passeport-${id}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async savePassportProof(id: string, data: { signature?: string; photo?: string }) {
+    return this.request<any>(`/passports/${id}/proof`, { method: 'PATCH', body: JSON.stringify(data) });
+  }
+
+  // Crédits carbone — marché secondaire, vente, compensation, certificat
+  async getCarbonMarket() {
+    return this.request<any>('/carbon/market');
+  }
+
+  async listCarbonCredit(id: string, pricePerTonne?: number) {
+    return this.request<any>(`/carbon/${id}/list`, { method: 'PATCH', body: JSON.stringify({ pricePerTonne }) });
+  }
+
+  async unlistCarbonCredit(id: string) {
+    return this.request<any>(`/carbon/${id}/unlist`, { method: 'PATCH' });
+  }
+
+  async retireCarbonCredit(id: string) {
+    return this.request<any>(`/carbon/${id}/retire`, { method: 'PATCH' });
+  }
+
+  async downloadCarbonCertificate(id: string) {
+    const res = await fetch(`${this.baseUrl}/carbon/${id}/certificate`, { headers: this.getHeaders() });
+    if (!res.ok) throw new Error('Échec de la génération du certificat');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `certificat-carbone-${id}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 }
 

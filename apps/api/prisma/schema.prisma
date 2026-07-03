@@ -123,19 +123,22 @@ model Company {
   companySector          String
   companyAddress         String
   companyCity            String
-  companyCountry         String    @default("France")
+  companyCountry         String    @default("Cameroun")
   companyLatitude        Float
   companyLongitude       Float
   trustScore      Float     @default(0.5)
   kybStatus       KYBStatus @default(PENDING)
   description     String?
   logoUrl         String?
+  registrationNumber String?
+  webhookUrl      String?
   certifications  String    @default("[]")
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
   // Relations
   users               User[]
+  apiKeys             ApiKey[]
   listings            WasteListing[]
   matchesAsBuyer      Match[]            @relation("BuyerMatches")
   matchesAsSeller     Match[]            @relation("SellerMatches")
@@ -161,12 +164,16 @@ model User {
   avatarUrl    String?
   isActive     Boolean  @default(true)
   companyId    String
+  locale       String?  @default("fr")
+  theme        String?  @default("dark")
+  notificationPrefs Json?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   // Relations
   company       Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
   notifications Notification[]
+  auditLogs     AuditLog[]
 
   @@index([companyId])
   @@index([role])
@@ -259,7 +266,7 @@ model Contract {
 model MaterialPassport {
   id                String          @id @default(cuid())
   contractId        String
-  qrCodeData        String          @unique
+  qrCodeData        String
   transportStatus   TransportStatus @default(CREATED)
   currentLatitude   Float?
   currentLongitude  Float?
@@ -309,7 +316,7 @@ model Transaction {
   amount        Float
   commission    Float
   commissionRate Float            @default(0.04) // 4% default
-  currency      String            @default("EUR")
+  currency      String            @default("XAF")
   status        TransactionStatus @default(PENDING)
   paymentMethod String?
   createdAt     DateTime          @default(now())
@@ -373,4 +380,42 @@ model Notification {
 
   @@index([userId, isRead])
   @@index([createdAt])
+}
+
+// ===================== SETTINGS / DEVELOPER / SECURITY =====================
+
+enum AuditStatus {
+  SUCCESS
+  FAILURE
+}
+
+model ApiKey {
+  id         String    @id @default(cuid())
+  companyId  String
+  label      String
+  prefix     String    // ex: symbio_live_
+  lastFour   String    // 4 derniers caractères pour l'affichage masqué
+  keyHash    String    // hash SHA-256 de la clé complète (jamais stockée en clair)
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([keyHash])
+}
+
+model AuditLog {
+  id        String      @id @default(cuid())
+  userId    String
+  action    String      // ex: LOGIN, CONTRACT_SIGNED, API_KEY_CREATED
+  ipAddress String?
+  status    AuditStatus @default(SUCCESS)
+  metadata  Json?
+  createdAt DateTime    @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
 }

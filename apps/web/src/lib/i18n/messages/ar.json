@@ -1,0 +1,17 @@
+{
+  "nav.dashboard": "لوحة التحكم",
+  "nav.marketplace": "السوق",
+  "nav.listings": "إعلاناتي",
+  "nav.matches": "المطابقة بالذكاء الاصطناعي",
+  "nav.contracts": "العقود",
+  "nav.passports": "الجوازات",
+  "nav.carbon": "أرصدة الكربون",
+  "nav.messages": "الرسائل",
+  "nav.settings": "الإعدادات",
+  "settings.title": "الإعدادات",
+  "settings.tab.profile": "هوية الشركة",
+  "settings.tab.appearance": "اللغة والمظهر",
+  "settings.tab.notifications": "الإشعارات",
+  "settings.tab.developer": "المطور",
+  "settings.tab.security": "الأمان"
+}

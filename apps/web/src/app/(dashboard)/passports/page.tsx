@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import Link from 'next/link';
 
@@ -8,16 +8,16 @@ export default function PassportsPage() {
   const [contracts, setContracts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => { loadPassports(); }, []);
-
-  const loadPassports = async () => {
+  const loadPassports = useCallback(async () => {
     try {
       // Get contracts first, then passports from them (simplified for MVP)
       const result = await api.getMyContracts();
       setContracts(result.data || []);
     } catch (err) { console.error(err); }
     finally { setIsLoading(false); }
-  };
+  }, []);
+
+  useEffect(() => { loadPassports(); }, [loadPassports]);
 
   return (
     <div className="animate-fade-in">

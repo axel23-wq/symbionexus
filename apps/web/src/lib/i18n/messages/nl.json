@@ -1,0 +1,17 @@
+{
+  "nav.dashboard": "Dashboard",
+  "nav.marketplace": "Marktplaats",
+  "nav.listings": "Mijn advertenties",
+  "nav.matches": "AI-matching",
+  "nav.contracts": "Contracten",
+  "nav.passports": "Paspoorten",
+  "nav.carbon": "CO₂-credits",
+  "nav.messages": "Berichten",
+  "nav.settings": "Instellingen",
+  "settings.title": "Instellingen",
+  "settings.tab.profile": "Bedrijfsidentiteit",
+  "settings.tab.appearance": "Taal & Thema",
+  "settings.tab.notifications": "Meldingen",
+  "settings.tab.developer": "Ontwikkelaar",
+  "settings.tab.security": "Beveiliging"
+}

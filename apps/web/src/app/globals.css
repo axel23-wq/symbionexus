@@ -848,3 +848,61 @@ a:hover {
 .category-glass { --category-color: #06b6d4; }
 .category-paper { --category-color: #a3e635; }
 .category-electronic { --category-color: #ec4899; }
+
+/* ============================================
+   LIGHT THEME (data-theme="light") — WCAG AA
+   Bascule les variables de surface/texte ;
+   Dark Premium reste le défaut (:root).
+   ============================================ */
+[data-theme="light"] {
+  --color-bg-deep: #e2e8f0;
+  --color-bg-base: #f5f7fa;
+  --color-bg-card: #ffffff;
+  --color-bg-elevated: #ffffff;
+  --color-bg-hover: #eef2f7;
+  --color-bg-glass: rgba(255, 255, 255, 0.85);
+  --color-bg-glass-light: rgba(15, 23, 42, 0.03);
+
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-muted: #64748b;
+  --color-text-accent: #0d9488;
+
+  --border-subtle: rgba(15, 23, 42, 0.08);
+  --border-medium: rgba(15, 23, 42, 0.14);
+  --border-glow: rgba(13, 148, 136, 0.35);
+
+  --gradient-hero: linear-gradient(135deg, #f5f7fa 0%, #eef2f7 50%, #e6edf5 100%);
+  --gradient-card: linear-gradient(145deg, #ffffff, #f7f9fc);
+  --gradient-glow: radial-gradient(ellipse at center, rgba(13, 148, 136, 0.08), transparent 70%);
+}
+
+/* Fond global piloté par la variable de thème */
+[data-theme="light"] body {
+  background: var(--color-bg-base);
+  color: var(--color-text-primary);
+}
+
+/* Variables dédiées à la page Paramètres (theme-aware, utilisées inline via var()) */
+:root {
+  --set-bg: #0a1128;
+  --set-card: rgba(15, 27, 61, 0.55);
+  --set-card-border: rgba(148, 163, 184, 0.14);
+  --set-input-bg: #0c1527;
+  --set-input-border: #1a2540;
+  --set-text: #e2e8f0;
+  --set-text-dim: #94a3b8;
+  --set-text-muted: #64748b;
+  --set-hover: #111c30;
+}
+[data-theme="light"] {
+  --set-bg: #f5f7fa;
+  --set-card: #ffffff;
+  --set-card-border: rgba(15, 23, 42, 0.10);
+  --set-input-bg: #f8fafc;
+  --set-input-border: #d8e0ea;
+  --set-text: #0f172a;
+  --set-text-dim: #475569;
+  --set-text-muted: #64748b;
+  --set-hover: #eef2f7;
+}
