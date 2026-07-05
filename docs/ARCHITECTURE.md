@@ -15,7 +15,7 @@
 > 6. Fin de chaque section → auto-update : Roadmap · Registre d'écarts · Dépendances · Risques · Priorités.
 > 7. Opportunité détectée → **proposer**, jamais implémenter sans validation.
 
-**Version : v0.33** · SSOT 100% ✓ · Plan ✓ · **P1.1 rate-limiting ✓** · **P1.2 tests : matching+carbon+contracts (12/12 ✓)** (reste : gate CI + passport).
+**Version : v0.35** · SSOT 100% ✓ · Plan ✓ · P1 critique fait+commité · **+ Pilier 6 Citoyen/Public (ADR-017, extension SSOT)**.
 > Ce fichier **incarne la mémoire Ch.4** (architecturale + métier). Mémoire opérationnelle = runtime (dashboard/logs, à renforcer via Sentry). Règles actives : non-régression · **BREAKING CHANGE explicite** (Ch.4.5) · modules critiques (paiement/carbone/contrats) = évolution lente, testés/versionnés (Ch.4.8).
 
 ---
@@ -69,7 +69,9 @@
 
 **Positionnement** : infrastructure numérique **mondiale** de l'économie circulaire industrielle. Nexus 6 acteurs : producteurs déchets · consommateurs matières secondaires · logisticiens · régulateurs · certificateurs · marchés carbone.
 
-**Mission (5 piliers)** : ① connecter (IA matching) ② structurer/standardiser (taxonomie universelle) ③ tracer (DPP complet) ④ optimiser logistique (coût+CO₂+délai) ⑤ automatiser conformité (ESG/CSRD/GHG, Scope 1/2/3).
+**Mission (6 piliers)** : ① connecter (IA matching) ② structurer (taxonomie) ③ tracer (DPP) ④ optimiser logistique ⑤ automatiser conformité (ESG/CSRD/GHG) · **⑥ Économie Circulaire Citoyenne & Publique (B2C+B2G)**.
+
+**Pilier 6 — Économie Circulaire Citoyenne & Publique (ajout stratégique, ADR-017)** : relie **citoyens** (dépôt/collecte déchets ménagers, points d'apport, consigne, récompenses) · **entreprises** (débouchés) · **recycleurs** (tri/traitement) · **pouvoirs publics** (régulation, incitations, données déchets municipaux, reporting). Pont **B2B↔B2C↔B2G**, au même niveau qu'IA/Logistique/Conformité/ESG/Marketplace. Cameroun-first : formalise la collecte informelle + interface municipalités.
 
 **Vision architecturale (4 axes)** :
 - **Cloud-native** : microservices · API gateway · event-driven · multi-tenant SaaS · K8s · multi-région.
@@ -123,7 +125,7 @@
 | Digital Twins | aucun | jumeau numérique + IoT | 🟢 | P4 |
 | Design system UI | ✅ dark pro + KPI + charts + 3D + timelines (FAIT) | conforme §8 | 🟢 | — |
 | Dashboards par rôle | SELLER/BUYER surtout | vues dédiées TRANSPORTER/REGULATOR/ADMIN (Role en base) | 🟠 | P2 |
-| Matching UI « WHY » | score affiché | exposer `scoreBreakdown` (explicabilité) | 🟢 | P2 |
+| Matching UI « WHY » | ✅ `scoreBreakdown` déjà affiché (barres Matière/Distance/Volume/Confiance) | conforme Ch.8 explicabilité | 🟢 | — |
 | Carbon UI compare | absent | vierge vs recyclé (facteurs déjà en base) | 🟢 | P2 |
 | Rate limiting | ✅ throttler (global 100/min, login 5/min) — testé 429 | conforme Ch.5.8/6.7 | 🟢 | — |
 | DevSecOps | tsc/lint/build | +Dependabot/Snyk(SCA)+SAST | 🟠 | P2 |
@@ -145,6 +147,7 @@
 | Geospatial | Haversine JS (OK MVP) | PostGIS (requêtes spatiales à l'échelle, Ch.9.8) | 🟢 | P3 |
 | Cache/IaC | aucun · deploy managé | Redis cache + IaC (Terraform) reproductible | 🟢 | P4 |
 | Monétisation | commission 4% data-ready · marché carbone ✅ | +SaaS abonnements + API billing + logistics margin (Ch.10.2) | 🟢 | P3 |
+| **Pilier 6 Citoyen/Public** | absent (réel = B2B seul) | collecte citoyenne + points d'apport/consigne + portail municipalités (B2G) + incitations (ADR-017) | 🟠 | P3 |
 | Conformité | audit log | KYC/KYB+zero-trust | 🔴 | P2 |
 | Logistique | waypoints simulés | Maps/HERE + ETA + rerouting + carrier(DHL/UPS/Shippo) + tracking | 🟠 | P2 |
 | ESG | absent | Scope1/2/3 + CSRD + ISO 14001/14064/14067 | 🔴 | P2 |
@@ -209,6 +212,7 @@
 | **ADR-014-R** | **Réviser** l'ordre de priorité v0.1 → adopter la hiérarchie Ch.3.2 (Sécurité N1…) | résout C-005 · Ch.3.2 = cadre officiel détaillé, ajoute Sécurité (Ch.1.3 « sécurité > facilité ») · UX N5 préserve l'atout réel | garder v0.1 · fusion hybride | change l'ordre de tranchage des conflits futurs | 🟡 Proposé (PO) |
 | ADR-015 | Tests unitaires obligatoires sur modules critiques avant modif (paiement/carbone/contrats/matching) | Ch.4.8 stabilisation + 4.5 non-régression · finance = risque | tests plus tard / manuels | jest specs + gate CI | 🟡 Proposé |
 | ADR-016 | Sécurité des agents IA : sandbox + validation humaine des actions critiques + décisions loggées + interdiction accès direct paiement/contrats | Ch.6.8 · étend ADR-013 · « agents puissants mais contrôlés » | agents pleinement autonomes | garde-fous couche agents (V3) | 🟡 Proposé |
+| ADR-017 | **Pilier 6** : Économie Circulaire Citoyenne & Publique (B2C+B2G) = 6ᵉ pilier officiel, phasé (données municipales B2G d'abord, collecte citoyenne B2C ensuite) | relie citoyens/entreprises/recycleurs/public · Cameroun-first (collecte informelle) · effet réseau | rester B2B pur | nouveaux rôles (CITIZEN/PUBLIC), modèles collecte, portail municipal | 🟡 Proposé (attend confirmation périmètre + .docx) |
 
 ---
 
@@ -302,3 +306,5 @@
 - **v0.31** : **P1.2 démarré** — jest/ts-jest/@types/jest installés (absents avant) + `jest.config.js` + `matches.service.spec.ts` (6 tests scoring, **6/6 ✓**). R13 passe 🔴→🟡. Reste : tests carbon/contracts/passport.
 - **v0.32** : `carbon.service.spec.ts` (3 tests : calcul CO₂ 4t/180/24000, facteur défaut, idempotence). Total **9/9 ✓** (2 suites). Reste contracts/passport.
 - **v0.33** : `contracts.service.spec.ts` (3 tests : totalPrice 260k, double-signature→SIGNED, signature simple). Total **12/12 ✓** (3 suites). R13 : 3 modules critiques couverts. Reste gate CI + passport.
+- **v0.34** : lot P1 commité (69dfe7a). Matching-WHY constaté **déjà présent** (scoreBreakdown affiché) — registre corrigé.
+- **v0.35** : **Pilier 6 — Économie Circulaire Citoyenne & Publique (B2C+B2G)** ajouté (mission→6 piliers + écart + **ADR-017 proposé**). Extension SSOT, rien écrasé. En attente : confirmation périmètre + décision régénération .docx.
