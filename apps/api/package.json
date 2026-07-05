@@ -24,6 +24,7 @@
     "@nestjs/platform-express": "^11.0.0",
     "@nestjs/platform-socket.io": "^11.0.0",
     "@nestjs/swagger": "^11.0.0",
+    "@nestjs/throttler": "^6.5.0",
     "@nestjs/websockets": "^11.0.0",
     "@prisma/client": "^6.0.0",
     "bcryptjs": "^2.4.3",
@@ -43,12 +44,15 @@
     "@nestjs/testing": "^11.0.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/express": "^5.0.0",
+    "@types/jest": "^30.0.0",
     "@types/node": "^22.0.0",
     "@types/passport-jwt": "^4.0.1",
     "@types/pdfkit": "^0.17.6",
     "@types/qrcode": "^1.5.5",
     "@types/uuid": "^10.0.0",
+    "jest": "^30.4.2",
     "prisma": "^6.0.0",
+    "ts-jest": "^29.4.11",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.0"
   }

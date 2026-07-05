@@ -1,4 +1,5 @@
 import { Controller, Post, Body, Get, UseGuards, Req, HttpCode, HttpStatus } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto } from './dto/auth.dto';
@@ -23,6 +24,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @Throttle({ default: { ttl: 60000, limit: 5 } }) // anti brute-force : 5 tentatives / min / IP
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Connexion avec email et mot de passe' })
   @ApiResponse({ status: 200, description: 'Connexion réussie' })
