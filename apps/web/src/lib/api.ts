@@ -330,6 +330,29 @@ class ApiClient {
     a.click();
     URL.revokeObjectURL(url);
   }
+
+  // Collecte citoyenne temps réel (flux réel : DB + events + wallet)
+  async submitCollection(dto: { materialCategory: string; declaredWeightKg: number; phone?: string; latitude?: number; longitude?: number }) {
+    return this.request<any>('/collection', { method: 'POST', body: JSON.stringify(dto) });
+  }
+  async analyzeCollection(image: string) {
+    return this.request<any>('/collection/analyze', { method: 'POST', body: JSON.stringify({ image }) });
+  }
+  async getMyCollections() {
+    return this.request<any>('/collection/my');
+  }
+  async getWallet() {
+    return this.request<any>('/collection/wallet');
+  }
+  async assignCollection(id: string) {
+    return this.request<any>(`/collection/${id}/assign`, { method: 'PATCH' });
+  }
+  async validateCollection(id: string, validatedWeightKg: number) {
+    return this.request<any>(`/collection/${id}/validate`, { method: 'PATCH', body: JSON.stringify({ validatedWeightKg }) });
+  }
+  async payCollection(id: string) {
+    return this.request<any>(`/collection/${id}/pay`, { method: 'PATCH' });
+  }
 }
 
 export const api = new ApiClient();

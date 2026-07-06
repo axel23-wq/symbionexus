@@ -17,6 +17,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { icon: '📊', tkey: 'nav.dashboard', href: '/dashboard' },
   { icon: '🏪', tkey: 'nav.marketplace', href: '/marketplace' },
+  { icon: '♻️', label: 'Citoyen — Déchets → Argent', href: '/citizen' },
   { icon: '📋', tkey: 'nav.listings', href: '/listings', roles: ['SELLER'] },
   { icon: '🤖', tkey: 'nav.matches', href: '/matches' },
   { icon: '📝', tkey: 'nav.contracts', href: '/contracts' },

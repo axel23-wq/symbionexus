@@ -1,6 +1,3 @@
-// SymbioNexus — Prisma Schema
-// Industrial Circular Economy Marketplace
-
 generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "debian-openssl-3.0.x"]
@@ -11,7 +8,337 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ===================== ENUMS =====================
+model Company {
+  id                  String               @id @default(cuid())
+  name                String
+  companySector       String
+  companyAddress      String
+  companyCity         String
+  companyCountry      String               @default("Cameroun")
+  companyLatitude     Float
+  companyLongitude    Float
+  trustScore          Float                @default(0.5)
+  kybStatus           KYBStatus            @default(PENDING)
+  description         String?
+  logoUrl             String?
+  certifications      String               @default("[]")
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  registrationNumber  String?
+  webhookUrl          String?
+  apiKeys             ApiKey[]
+  carbonCredits       CarbonCredit[]
+  complianceDocuments ComplianceDocument[]
+  contractsAsBuyer    Contract[]           @relation("BuyerContracts")
+  contractsAsSeller   Contract[]           @relation("SellerContracts")
+  matchesAsBuyer      Match[]              @relation("BuyerMatches")
+  matchesAsSeller     Match[]              @relation("SellerMatches")
+  receivedMessages    Message[]            @relation("ReceivedMessages")
+  sentMessages        Message[]            @relation("SentMessages")
+  users               User[]
+  listings            WasteListing[]
+
+  @@index([companySector])
+  @@index([companyLatitude, companyLongitude])
+  @@index([kybStatus])
+}
+
+model User {
+  id                 String              @id @default(cuid())
+  email              String              @unique
+  passwordHash       String
+  firstName          String
+  lastName           String
+  role               Role                @default(SELLER)
+  avatarUrl          String?
+  isActive           Boolean             @default(true)
+  companyId          String
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  locale             String?             @default("fr")
+  notificationPrefs  Json?
+  theme              String?             @default("dark")
+  auditLogs          AuditLog[]
+  collectionRequests CollectionRequest[] @relation("UserCollections")
+  notifications      Notification[]
+  company            Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  wallet             Wallet?
+
+  @@index([companyId])
+  @@index([role])
+}
+
+model WasteListing {
+  id               String           @id @default(cuid())
+  companyId        String
+  title            String
+  materialType     String
+  materialCategory MaterialCategory
+  description      String
+  volumeKg         Float
+  frequency        Frequency
+  chemicalProfile  Json?
+  pricePerKg       Float?
+  latitude         Float
+  longitude        Float
+  status           ListingStatus    @default(DRAFT)
+  photos           String           @default("[]")
+  availableFrom    DateTime?
+  expiresAt        DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  matches          Match[]
+  company          Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([materialCategory])
+  @@index([status])
+  @@index([latitude, longitude])
+}
+
+model Match {
+  id                 String       @id @default(cuid())
+  listingId          String
+  buyerCompanyId     String
+  sellerCompanyId    String
+  compatibilityScore Float
+  scoreBreakdown     Json
+  distanceKm         Float
+  status             MatchStatus  @default(PROPOSED)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  contract           Contract?
+  buyerCompany       Company      @relation("BuyerMatches", fields: [buyerCompanyId], references: [id])
+  listing            WasteListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  sellerCompany      Company      @relation("SellerMatches", fields: [sellerCompanyId], references: [id])
+
+  @@unique([listingId, buyerCompanyId])
+  @@index([buyerCompanyId])
+  @@index([sellerCompanyId])
+  @@index([status])
+}
+
+model Contract {
+  id                  String             @id @default(cuid())
+  matchId             String             @unique
+  sellerCompanyId     String
+  buyerCompanyId      String
+  volumeEngagedKg     Float
+  pricePerKg          Float
+  totalPrice          Float
+  durationMonths      Int                @default(6)
+  frequency           Frequency
+  transportConditions Json?
+  sellerSigned        Boolean            @default(false)
+  buyerSigned         Boolean            @default(false)
+  status              ContractStatus     @default(DRAFT)
+  signedAt            DateTime?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  buyerCompany        Company            @relation("BuyerContracts", fields: [buyerCompanyId], references: [id])
+  match               Match              @relation(fields: [matchId], references: [id])
+  sellerCompany       Company            @relation("SellerContracts", fields: [sellerCompanyId], references: [id])
+  materialPassports   MaterialPassport[]
+  transactions        Transaction[]
+
+  @@index([sellerCompanyId])
+  @@index([buyerCompanyId])
+  @@index([status])
+}
+
+model MaterialPassport {
+  id                String          @id @default(cuid())
+  contractId        String
+  qrCodeData        String
+  transportStatus   TransportStatus @default(CREATED)
+  currentLatitude   Float?
+  currentLongitude  Float?
+  routeWaypoints    Json            @default("[]")
+  estimatedArrival  DateTime?
+  pickupAt          DateTime?
+  deliveredAt       DateTime?
+  deliveryProofAt   DateTime?
+  deliverySignature String?
+  deliveryPhotoUrl  String?
+  transporterNotes  String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  carbonCredit      CarbonCredit?
+  contract          Contract        @relation(fields: [contractId], references: [id])
+
+  @@index([contractId])
+  @@index([transportStatus])
+}
+
+model CarbonCredit {
+  id               String             @id @default(cuid())
+  passportId       String             @unique
+  companyId        String
+  co2AvoidedTonnes Float
+  equivalentTrees  Float
+  equivalentCarKm  Float
+  certificateUrl   String?
+  marketStatus     CarbonCreditStatus @default(GENERATED)
+  pricePerTonne    Float?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  company          Company            @relation(fields: [companyId], references: [id])
+  passport         MaterialPassport   @relation(fields: [passportId], references: [id])
+
+  @@index([companyId])
+  @@index([marketStatus])
+}
+
+model Transaction {
+  id             String            @id @default(cuid())
+  contractId     String
+  amount         Float
+  commission     Float
+  commissionRate Float             @default(0.04)
+  currency       String            @default("XAF")
+  status         TransactionStatus @default(PENDING)
+  paymentMethod  String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  contract       Contract          @relation(fields: [contractId], references: [id])
+
+  @@index([contractId])
+  @@index([status])
+}
+
+model ComplianceDocument {
+  id         String    @id @default(cuid())
+  companyId  String
+  type       String
+  title      String
+  fileUrl    String
+  expiresAt  DateTime?
+  isVerified Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  company    Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([expiresAt])
+}
+
+model Message {
+  id                String   @id @default(cuid())
+  senderCompanyId   String
+  receiverCompanyId String
+  matchId           String?
+  content           String
+  isRead            Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  receiverCompany   Company  @relation("ReceivedMessages", fields: [receiverCompanyId], references: [id])
+  senderCompany     Company  @relation("SentMessages", fields: [senderCompanyId], references: [id])
+
+  @@index([senderCompanyId])
+  @@index([receiverCompanyId])
+  @@index([matchId])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  data      Json?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([createdAt])
+}
+
+model ApiKey {
+  id         String    @id @default(cuid())
+  companyId  String
+  label      String
+  prefix     String
+  lastFour   String
+  keyHash    String
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+  company    Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([keyHash])
+}
+
+model AuditLog {
+  id        String      @id @default(cuid())
+  userId    String
+  action    String
+  ipAddress String?
+  status    AuditStatus @default(SUCCESS)
+  metadata  Json?
+  createdAt DateTime    @default(now())
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model CollectionRequest {
+  id                String           @id @default(cuid())
+  userId            String
+  declaredWeightKg  Float
+  validatedWeightKg Float?
+  pricePerKg        Float
+  estimatedValue    Float
+  finalValue        Float?
+  status            CollectionStatus @default(SUBMITTED)
+  phone             String?
+  latitude          Float?
+  longitude         Float?
+  collectorUserId   String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  materialCategory  String
+  user              User             @relation("UserCollections", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Wallet {
+  id           String              @id @default(cuid())
+  userId       String              @unique
+  balance      Float               @default(0)
+  currency     String              @default("XAF")
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions WalletTransaction[]
+
+  @@index([userId])
+}
+
+model WalletTransaction {
+  id        String       @id @default(cuid())
+  walletId  String
+  type      WalletTxType
+  amount    Float
+  reference String?
+  createdAt DateTime     @default(now())
+  wallet    Wallet       @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([walletId])
+}
+
+model SystemEvent {
+  id        String   @id @default(cuid())
+  type      String
+  payload   Json?
+  userId    String?
+  createdAt DateTime @default(now())
+
+  @@index([type])
+  @@index([createdAt])
+}
 
 enum Role {
   SELLER
@@ -115,307 +442,23 @@ enum NotificationType {
   SYSTEM
 }
 
-// ===================== MODELS =====================
-
-model Company {
-  id              String    @id @default(cuid())
-  name            String
-  companySector          String
-  companyAddress         String
-  companyCity            String
-  companyCountry         String    @default("Cameroun")
-  companyLatitude        Float
-  companyLongitude       Float
-  trustScore      Float     @default(0.5)
-  kybStatus       KYBStatus @default(PENDING)
-  description     String?
-  logoUrl         String?
-  registrationNumber String?
-  webhookUrl      String?
-  certifications  String    @default("[]")
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  // Relations
-  users               User[]
-  apiKeys             ApiKey[]
-  listings            WasteListing[]
-  matchesAsBuyer      Match[]            @relation("BuyerMatches")
-  matchesAsSeller     Match[]            @relation("SellerMatches")
-  contractsAsSeller   Contract[]         @relation("SellerContracts")
-  contractsAsBuyer    Contract[]         @relation("BuyerContracts")
-  carbonCredits       CarbonCredit[]
-  complianceDocuments ComplianceDocument[]
-  sentMessages        Message[]          @relation("SentMessages")
-  receivedMessages    Message[]          @relation("ReceivedMessages")
-
-  @@index([companySector])
-  @@index([companyLatitude, companyLongitude])
-  @@index([kybStatus])
-}
-
-model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  firstName    String
-  lastName     String
-  role         Role     @default(SELLER)
-  avatarUrl    String?
-  isActive     Boolean  @default(true)
-  companyId    String
-  locale       String?  @default("fr")
-  theme        String?  @default("dark")
-  notificationPrefs Json?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  // Relations
-  company       Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  notifications Notification[]
-  auditLogs     AuditLog[]
-
-  @@index([companyId])
-  @@index([role])
-}
-
-model WasteListing {
-  id               String           @id @default(cuid())
-  companyId        String
-  title            String
-  materialType     String
-  materialCategory MaterialCategory
-  description      String
-  volumeKg         Float
-  frequency        Frequency
-  chemicalProfile  Json?
-  pricePerKg       Float?
-  latitude         Float
-  longitude        Float
-  status           ListingStatus    @default(DRAFT)
-  photos           String           @default("[]")
-  availableFrom    DateTime?
-  expiresAt        DateTime?
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-
-  // Relations
-  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  matches Match[]
-
-  @@index([companyId])
-  @@index([materialCategory])
-  @@index([status])
-  @@index([latitude, longitude])
-}
-
-model Match {
-  id                 String      @id @default(cuid())
-  listingId          String
-  buyerCompanyId     String
-  sellerCompanyId    String
-  compatibilityScore Float
-  scoreBreakdown     Json        // { materialScore, distanceScore, volumeScore, trustScore }
-  distanceKm         Float
-  status             MatchStatus @default(PROPOSED)
-  createdAt          DateTime    @default(now())
-  updatedAt          DateTime    @updatedAt
-
-  // Relations
-  listing      WasteListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
-  buyerCompany Company      @relation("BuyerMatches", fields: [buyerCompanyId], references: [id])
-  sellerCompany Company     @relation("SellerMatches", fields: [sellerCompanyId], references: [id])
-  contract     Contract?
-
-  @@unique([listingId, buyerCompanyId])
-  @@index([buyerCompanyId])
-  @@index([sellerCompanyId])
-  @@index([status])
-}
-
-model Contract {
-  id                  String         @id @default(cuid())
-  matchId             String         @unique
-  sellerCompanyId     String
-  buyerCompanyId      String
-  volumeEngagedKg     Float
-  pricePerKg          Float
-  totalPrice          Float
-  durationMonths      Int            @default(6)
-  frequency           Frequency
-  transportConditions Json?
-  sellerSigned        Boolean        @default(false)
-  buyerSigned         Boolean        @default(false)
-  status              ContractStatus @default(DRAFT)
-  signedAt            DateTime?
-  createdAt           DateTime       @default(now())
-  updatedAt           DateTime       @updatedAt
-
-  // Relations
-  match             Match             @relation(fields: [matchId], references: [id])
-  sellerCompany     Company           @relation("SellerContracts", fields: [sellerCompanyId], references: [id])
-  buyerCompany      Company           @relation("BuyerContracts", fields: [buyerCompanyId], references: [id])
-  materialPassports MaterialPassport[]
-  transactions      Transaction[]
-
-  @@index([sellerCompanyId])
-  @@index([buyerCompanyId])
-  @@index([status])
-}
-
-model MaterialPassport {
-  id                String          @id @default(cuid())
-  contractId        String
-  qrCodeData        String
-  transportStatus   TransportStatus @default(CREATED)
-  currentLatitude   Float?
-  currentLongitude  Float?
-  routeWaypoints    Json            @default("[]")
-  estimatedArrival  DateTime?
-  pickupAt          DateTime?
-  deliveredAt       DateTime?
-  deliveryProofAt   DateTime?
-  deliverySignature String?
-  deliveryPhotoUrl  String?
-  transporterNotes  String?
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-
-  // Relations
-  contract     Contract      @relation(fields: [contractId], references: [id])
-  carbonCredit CarbonCredit?
-
-  @@index([contractId])
-  @@index([transportStatus])
-}
-
-model CarbonCredit {
-  id               String             @id @default(cuid())
-  passportId       String             @unique
-  companyId        String
-  co2AvoidedTonnes Float
-  equivalentTrees  Float
-  equivalentCarKm  Float
-  certificateUrl   String?
-  marketStatus     CarbonCreditStatus @default(GENERATED)
-  pricePerTonne    Float?
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-
-  // Relations
-  passport MaterialPassport @relation(fields: [passportId], references: [id])
-  company  Company          @relation(fields: [companyId], references: [id])
-
-  @@index([companyId])
-  @@index([marketStatus])
-}
-
-model Transaction {
-  id            String            @id @default(cuid())
-  contractId    String
-  amount        Float
-  commission    Float
-  commissionRate Float            @default(0.04) // 4% default
-  currency      String            @default("XAF")
-  status        TransactionStatus @default(PENDING)
-  paymentMethod String?
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
-
-  // Relations
-  contract Contract @relation(fields: [contractId], references: [id])
-
-  @@index([contractId])
-  @@index([status])
-}
-
-model ComplianceDocument {
-  id            String   @id @default(cuid())
-  companyId     String
-  type          String   // e.g., "ISO_14001", "WASTE_PERMIT", "SAFETY_DATA_SHEET"
-  title         String
-  fileUrl       String
-  expiresAt     DateTime?
-  isVerified    Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  // Relations
-  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-
-  @@index([companyId])
-  @@index([expiresAt])
-}
-
-model Message {
-  id              String   @id @default(cuid())
-  senderCompanyId String
-  receiverCompanyId String
-  matchId         String?
-  content         String
-  isRead          Boolean  @default(false)
-  createdAt       DateTime @default(now())
-
-  // Relations
-  senderCompany   Company @relation("SentMessages", fields: [senderCompanyId], references: [id])
-  receiverCompany Company @relation("ReceivedMessages", fields: [receiverCompanyId], references: [id])
-
-  @@index([senderCompanyId])
-  @@index([receiverCompanyId])
-  @@index([matchId])
-}
-
-model Notification {
-  id        String           @id @default(cuid())
-  userId    String
-  type      NotificationType
-  title     String
-  message   String
-  data      Json?
-  isRead    Boolean          @default(false)
-  createdAt DateTime         @default(now())
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, isRead])
-  @@index([createdAt])
-}
-
-// ===================== SETTINGS / DEVELOPER / SECURITY =====================
-
 enum AuditStatus {
   SUCCESS
   FAILURE
 }
 
-model ApiKey {
-  id         String    @id @default(cuid())
-  companyId  String
-  label      String
-  prefix     String    // ex: symbio_live_
-  lastFour   String    // 4 derniers caractères pour l'affichage masqué
-  keyHash    String    // hash SHA-256 de la clé complète (jamais stockée en clair)
-  createdAt  DateTime  @default(now())
-  lastUsedAt DateTime?
-  revokedAt  DateTime?
-
-  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-
-  @@index([companyId])
-  @@index([keyHash])
+enum CollectionStatus {
+  SUBMITTED
+  ASSIGNED
+  EN_ROUTE
+  PICKED_UP
+  VALIDATED
+  PAID
+  REJECTED
 }
 
-model AuditLog {
-  id        String      @id @default(cuid())
-  userId    String
-  action    String      // ex: LOGIN, CONTRACT_SIGNED, API_KEY_CREATED
-  ipAddress String?
-  status    AuditStatus @default(SUCCESS)
-  metadata  Json?
-  createdAt DateTime    @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, createdAt])
+enum WalletTxType {
+  CREDIT
+  DEBIT
+  PAYOUT
 }

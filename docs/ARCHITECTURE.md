@@ -15,7 +15,7 @@
 > 6. Fin de chaque section → auto-update : Roadmap · Registre d'écarts · Dépendances · Risques · Priorités.
 > 7. Opportunité détectée → **proposer**, jamais implémenter sans validation.
 
-**Version : v0.35** · SSOT 100% ✓ · Plan ✓ · P1 critique fait+commité · **+ Pilier 6 Citoyen/Public (ADR-017, extension SSOT)**.
+**Version : v0.44** · **SSOT + toutes extensions stratégiques 100% traitées** (SCSRE/SFITE/SCCEM/SGAADS/SGD-SCI/SCCEN + Master Execution). **9 piliers officiels** cartographiés.
 > Ce fichier **incarne la mémoire Ch.4** (architecturale + métier). Mémoire opérationnelle = runtime (dashboard/logs, à renforcer via Sentry). Règles actives : non-régression · **BREAKING CHANGE explicite** (Ch.4.5) · modules critiques (paiement/carbone/contrats) = évolution lente, testés/versionnés (Ch.4.8).
 
 ---
@@ -65,6 +65,11 @@
 
 ---
 
+## 9 PILIERS OFFICIELS (Master Execution Prompt) ⇄ registre
+1. **Smart Factory / Industrie** → SFITE (ADR-025) · 2. **Marketplace matières** → SCCEM (ADR-026), réel ✅ · 3. **IA centrale / gouvernance** → SGAADS/Ch.11 (ADR-021) · 4. **Sécurité & conformité** → ADR-012, baseline réel ✅ · 5. **UX / dashboards / rôles** → Ch.8, réel **mûr** ✅ · 6. **Infra cloud mondiale** → SGD-SCI, Phase-1 réel ✅ · 7. **Économie circulaire citoyenne** → Pilier 6 / SCSRE / SCCEN (ADR-017/022) · 8. **Logistique temps réel** → WF6 (ADR-020) · 9. **ESG / carbone / impact** → carbon réel ✅ + Scope1/2/3.
+
+---
+
 ## VUE B — VISION CIBLE (SSOT)
 
 **Positionnement** : infrastructure numérique **mondiale** de l'économie circulaire industrielle. Nexus 6 acteurs : producteurs déchets · consommateurs matières secondaires · logisticiens · régulateurs · certificateurs · marchés carbone.
@@ -72,6 +77,13 @@
 **Mission (6 piliers)** : ① connecter (IA matching) ② structurer (taxonomie) ③ tracer (DPP) ④ optimiser logistique ⑤ automatiser conformité (ESG/CSRD/GHG) · **⑥ Économie Circulaire Citoyenne & Publique (B2C+B2G)**.
 
 **Pilier 6 — Économie Circulaire Citoyenne & Publique (ajout stratégique, ADR-017)** : relie **citoyens** (dépôt/collecte déchets ménagers, points d'apport, consigne, récompenses) · **entreprises** (débouchés) · **recycleurs** (tri/traitement) · **pouvoirs publics** (régulation, incitations, données déchets municipaux, reporting). Pont **B2B↔B2C↔B2G**, au même niveau qu'IA/Logistique/Conformité/ESG/Marketplace. Cameroun-first : formalise la collecte informelle + interface municipalités.
+  - **SCCEN (spec B2C, MVP Douala)** : app citoyen → **photo → analyse IA (type/poids/qualité/valeur FCFA)** → collecte/dépôt → pesée → **paiement MoMo instantané** → **récompenses** (argent/points éco/badges/**score citoyen vert**/certificats). Edge-AI mobile (YOLO/TF-Lite) possible. Contrainte éco : prix achat < revente industrielle.
+
+**SCSRE — Centres Intelligents (backbone opérationnel du Pilier 6, ADR-022)** : réseau de centres (proximité/communaux/industriels/usines/hubs/ports secs/export) connectés temps réel. Workflow 24 étapes : réception lot → analyse IA → pesage → QC → paiement → stock → tri → **transformation → matière 1re secondaire** → certification → **publication auto Marketplace** → matching → vente → transport → DPP → carbone → ESG → audit. Automatisation IoT (balances/RFID/caméras/capteurs/robots) · **Digital Twin** par centre · gestion stock RT. Nouveaux modèles : `Center`, `Lot`, `Stock`, `Processing`. Roadmap propre MVP(centres/pesage/paiement/stock)→V1(IA/GPS)→V2(IoT/DigitalTwin)→V3(robotique).
+
+**SFITE — Usines Intelligentes & Transformation (aval SCSRE, ADR-025)** : réseau d'usines transformant déchets → matières 1res secondaires certifiées. **Filières** détaillées par matériau (plastiques/métaux/papier/verre/**DEEE**/pneus/huiles/organique) + procédés + industries clientes (seed **ADR-018**). IA industrielle (rendement/optim lignes/maintenance prédictive/énergie) · **Digital Twin industriel** · optim énergétique (solaire/batteries/récup chaleur). Standards **ISA-95 / IEC 62443 / OPC-UA / MQTT / Edge**. **DPP standardisé** GS1 Digital Link / CIRPASS / EPCIS 2.0 / W3C VC (**ADR-024**). Roadmap MVP(lots/QC/publication)→V1(IA procédés)→V2(DigitalTwin/IoT/énergie)→V3(robotique multi-usines).
+
+**SCCEM — Bourse des matières secondaires (extension Marketplace, ADR-026)** : 4 marchés — **spot** (prix dynamique) · **contractuel** (long terme indexé) · **enchères** · **ESG premium** (bas-carbone). Moteur **pricing IA** (offre/demande/qualité/logistique/carbone/**LME**/rareté). Settlement off-chain (MoMo/escrow, blockchain LT/R9) · matching **pgvector** · trading IA/arbitrage (LT). Réel : germes ✅ (marketplace+contrats+marché carbone). Roadmap MVP(listing/prix dynamique/achat direct)→V1(enchères/contrats/matching IA)→V2(pricing prédictif+LME)→V3(trading autonome/blockchain).
 
 **Vision architecturale (4 axes)** :
 - **Cloud-native** : microservices · API gateway · event-driven · multi-tenant SaaS · K8s · multi-région.
@@ -95,7 +107,18 @@
 - Matching sémantique : embeddings + contraintes physiques/logistiques (ex : chaleur fatale → serre/agro).
 - RAG (ingestion PDF → vectorisation → vectorDB → retrieval → génération) · GraphRAG (knowledge graph industriel).
 - Agents autonomes (voir C-003 : 5 en Partie 5 / 7 en Ch.11 / 8 en Ch.14) · OCR (Document AI) · Vision · Prédiction temporelle · IA négociation B2B · IA conformité/risque · multimodal.
-- **Master Control System (Ch.11)** — 5 couches : Perception → Intelligence → Reasoning → Execution → Monitoring · boucle décision continue · autonomie contrôlée (11.8 = ADR-016). Réel = flux synchrone, pas d'orchestrateur.
+- **Master Control System (Ch.11) / SGAADS** — Master AI + 8 agents + **Rule Engine** + **Moteur de simulation** (scénarios éco/logistique/carbone/financier) + mémoire vectorielle · boucle décision 8 étapes · **safe fallback** + validation humaine critique + audit immuable (= ADR-013/016/021). Réel = règles **hardcodées** (`sectorMap`/`CO2_FACTORS`), pas d'orchestrateur/simulation. Knowledge Graph = Neo4j (GraphRAG).
+
+**Workflows IA (extension SSOT — WF1-3)** :
+- **WF1 Acquisition** : ingestion multi-input (photos/vidéo/PDF/certifs/labo/**IoT/ERP/MES**) → OCR + Vision → classification + contaminants/pureté/humidité/granulo + détection danger + classification réglementaire → taxonomie + métadonnées + **DPP auto** (sans humain).
+- **WF2 Valorisation** : déchet → **filières** possibles (ex ferraille→acier→auto/machines/export) ; par scénario : rendement · coût · rentabilité · CO₂ évité · énergie · valeur marché · risque · conformité · ESG → **classement** (ADR-018).
+- **WF3 Matching IA multi-signal** : desc+images+docs+histo+logistique+marché → **7 scores** (compatibilité · éco · carbone · ESG · réglementaire · confiance · risque) + **WHY** auto (ADR-019, étend ADR-010). Réel = 4 facteurs.
+- **WF4 Négociation IA** : agents → prix/scénarios/compromis → contrat auto, **validé user avant signature** (réel : signature ✅, agents absents — LT).
+- **WF5 Paiement** : transaction + calcul taxes/TVA/logistique/assurance/commission/**escrow** · MoMo/**Flutterwave**/cartes/Stripe/Adyen · fonds **Escrow** jusqu'à livraison (étend ADR-011 ; réel MoMo+commission ✅).
+- **WF6 Logistique temps réel** : sélection transporteur (coût/dist/CO₂/délai) + GPS/ETA/trafic/météo/géofencing/pesée/QR/signature/photos, diffusion **WebSocket** (ADR-020 ; réel timeline+PoD+Socket.io ✅ partiel).
+- **WF7 Validation réception** : vérif identité/QR/poids/photos/conformité → DPP maj + **libération fonds** + certificats + archive (réel QR+PoD+DPP+crédit ✅ partiel ; voir **C-006**).
+- **WF8 Carbone MRV** : Scope1/2/3 + transport + substitution vierge + LCA + ISO14064/14067 + CSRD (réel facteurs+certificat ✅ partiel).
+- **WF9 IA décisionnelle continue** + **WF10 apprentissage continu** (des données validées, **contrôle humain sur critique**) = Master Control (Ch.11) + mémoire (Ch.4) — **ADR-021**, LT.
 - Embeddings providers : OpenAI / Cohere / Voyage. VectorDB : Pinecone/Weaviate/Qdrant (**ou pgvector** — ADR-009).
 
 **Sécurité cible (Partie 9)** : Zero-Trust · MFA/SSO · RBAC+ABAC · KYB/KYC renforcé · DevSecOps (SAST/SCA/scan) · Observabilité (Sentry/Prom/Grafana/Datadog) · anti-fraude · AES-256/TLS1.3 · secrets vault · audit immuable · WAF+rate-limiting · HA 99.99% multi-région.
@@ -148,6 +171,28 @@
 | Cache/IaC | aucun · deploy managé | Redis cache + IaC (Terraform) reproductible | 🟢 | P4 |
 | Monétisation | commission 4% data-ready · marché carbone ✅ | +SaaS abonnements + API billing + logistics margin (Ch.10.2) | 🟢 | P3 |
 | **Pilier 6 Citoyen/Public** | absent (réel = B2B seul) | collecte citoyenne + points d'apport/consigne + portail municipalités (B2G) + incitations (ADR-017) | 🟠 | P3 |
+| WF1 Acquisition IA | photos base64 + PDF passeport | multi-input + OCR/Vision + analyse matière (contaminant/pureté/danger/régl) + DPP auto | 🔴 | P2 (bloqué C-001/R8) |
+| WF1 ingestion IoT/ERP/MES | aucune | connecteurs vidéo/IoT/ERP/MES | 🟢 | P4 |
+| WF2 Valorisation | aucune | moteur filières + rendement/coût/CO₂/ESG/risque + ranking (ADR-018, rules-based d'abord) | 🟠 | P2 |
+| WF3 Matching 7-scores | 4 facteurs + WHY ✅ | 7 scores (éco/carbone/ESG/régl/risque ajoutés) + signaux IA (ADR-019) | 🟠 | P2 |
+| WF4 Négociation IA | prix manuel + signature ✅ | agents prix/scénarios/compromis (validation humaine gardée) | 🟢 | P3 |
+| WF5 Paiement/Escrow | MoMo lien + commission 4% ✅ | escrow + calc taxes/TVA/logistique + Flutterwave/multi (ADR-011) | 🟠 | P2 |
+| WF6 Logistique RT | timeline+PoD+Socket.io ✅ | carrier auto + GPS-live + ETA/géofencing/pesée (ADR-020) | 🟠 | P2 |
+| WF7 Validation réception | QR+PoD+DPP+crédit ✅ | +poids/qualité/identité auto + libération fonds gardée (C-006) | 🟠 | P2 |
+| WF9/10 IA continue+apprentissage | aucun | agents+prévision+Digital Twin+learning (contrôle humain, ADR-021) | 🟢 | P4 |
+| **SCSRE Centres** | aucun (réel = annonces entreprises) | modèles Center/Lot/Stock/Processing + workflow 24 + publication auto marketplace (ADR-022) | 🟠 | P3 |
+| Centres IoT/DigitalTwin/robotique | aucun | balances/RFID/caméras/capteurs/cobots + jumeau numérique | 🟢 | P4 |
+| Stockage fichiers | ⚠️ base64 (R10) | object storage R2/Supabase (URL) — **résout R10** (ADR-023) | 🟠 | P2 |
+| SFITE Usines/transformation | aucun | filières+procédés+IA industrielle+DigitalTwin+MES/SCADA (ISA-95/OPC-UA, ADR-025) | 🟢 | P4 |
+| DPP standard | PDF+QR custom | GS1 Digital Link / CIRPASS / EPCIS / W3C VC (interop+export EU, ADR-024) | 🟠 | P3 |
+| Optim énergétique | aucun | solaire/batteries/récup chaleur (usines) | 🟢 | P4 |
+| SCCEM Bourse | marketplace + marché carbone ✅ germes | 4 marchés (spot/contractuel/enchères/ESG) + pricing dynamique (ADR-026) | 🟠 | P3 |
+| Pricing dynamique/LME | prix manuel | moteur spot heuristique (now) + LME/prédictif (V2) | 🟠 | P2 |
+| Enchères | aucun | modèle+logique enchères (MVP-able) | 🟢 | P3 |
+| Rule Engine | règles hardcodées (sectorMap/CO2_FACTORS) | moteur externalisé (Drools/Camunda/Temporal) | 🟢 | P4 |
+| Moteur simulation | aucun | simulation scénarios éco/logistique/carbone/financier | 🟢 | P4 |
+| Récompenses citoyennes | aucun | argent/points éco/badges/score citoyen vert/certificats (gamification SCCEN) | 🟠 | P3 |
+| Edge-AI mobile | aucun | classification déchet on-device (YOLO/TF-Lite) | 🟢 | P4 |
 | Conformité | audit log | KYC/KYB+zero-trust | 🔴 | P2 |
 | Logistique | waypoints simulés | Maps/HERE + ETA + rerouting + carrier(DHL/UPS/Shippo) + tracking | 🟠 | P2 |
 | ESG | absent | Scope1/2/3 + CSRD + ISO 14001/14064/14067 | 🔴 | P2 |
@@ -187,6 +232,7 @@
 - ✅ **C-002 RÉSOLU** (par SSOT Ch.13.1) : le doc lui-même tranche « **modular monolith → microservices** ». ADR-008 = **Accepté** (SSOT-backed). Partie 4 §2.5 (microservices) = cible long-terme, pas immédiat.
 - ✅ **C-003 RÉSOLU** (par SSOT Ch.14) : liste définitive **8 agents** (Matching · Logistique · Carbone&ESG · Compliance&KYC · Contrats&Finance · Fraude · IoT · Intelligence Globale/RAG). Partie 5 (5) / Ch.11 (7) = sous-ensembles. **Proposition** : retenir le superset **8** (Matching, Logistics, Carbon&ESG, Compliance&KYC, Fraud, Finance&Contract, IoT, Global/RAG), à figer en Ch.14. Non bloquant.
 - 🔴 **C-004** (doc↔doc + doc↔réel) : Partie 6 §2.1 impose **Stripe Connect escrow** ; Ch.2 étape 3 exige **paiement adapté Cameroun** (Stripe indispo). Réel = **Mobile Money**. **Proposition** : MoMo API natif (Orange/MTN) + escrow simulé plateforme (V2), Stripe = international V4. → **ADR-011**. Non bloquant.
+- 🔴 **C-006** (WF7 ↔ ADR-016/WF10) : WF7 « **libère automatiquement les fonds** » vs contrôle humain sur actions critiques (Ch.6.8/WF10). **Proposition** : libération auto **uniquement si** validation multi-signal 100% verte (QR+poids+qualité+conformité), sinon revue humaine. Non tranché (PO).
 - 🔴 **C-005** (décision validée ↔ SSOT) : ordre de priorité utilisateur (v0.1 : archi>UX>valeur>évol>facilité) **≠** hiérarchie Ch.3.2 (Sécurité>Valeur>Fiabilité>Scalabilité>UX>Optim). Divergences : **Sécurité absente** de v0.1 ; **UX #2 vs N5**. **Non tranché** — les deux conservées → **ADR-014-R** (révision), arbitrage PO.
 
 ---
@@ -206,13 +252,22 @@
 | ADR-008 | Modular monolith d'abord, microservices plus tard | résout C-002 · **confirmé par SSOT Ch.13.1** · réel MVP + simplicité (Ch.3.5) | microservices immédiats (Partie 4 §2.5) | garder NestJS modulaire, frontières nettes | ✅ Accepté |
 | ADR-009 | pgvector (Neon/Postgres) pour embeddings, pas de vectorDB externe (MVP/V2) | pas de nouvelle infra · Neon supporte pgvector · réversible · simplicité (Ch.3.5) | Pinecone/Weaviate/Qdrant | extension pg + colonne vector + index | 🟡 Proposé |
 | ADR-010 | Matching hybride : formule pondérée + score sémantique (blend), pas de remplacement | non-régression (Ch.4.5) · fallback si IA down (Ch.5.7) · explicabilité WHY (Ch.8) | remplacer par IA pure | étendre `calculateScore` + `ScoreBreakdown` | 🟡 Proposé |
-| ADR-011 | Paiement Mobile Money natif (Orange/MTN MoMo API) + escrow simulé plateforme ; Stripe = international V4 | résout C-004 · Cameroun-first (Ch.2) · Stripe indispo local · réel déjà MoMo | Stripe Connect immédiat (Partie 6) | intégration MoMo + retenue fonds + Transaction | 🟡 Proposé |
+| ADR-011 | Paiement Mobile Money natif via **agrégateurs (Campay/Fapshi/CinetPay/Paystack/Flutterwave/Wave)** (Orange/MTN) + escrow simulé ; Stripe = international V4 | résout C-004 · Cameroun-first (Ch.2) · Stripe indispo local · réel déjà MoMo | Stripe Connect immédiat (Partie 6) | intégration MoMo + retenue fonds + Transaction | 🟡 Proposé |
 | ADR-012 | Baseline sécurité pragmatique : RBAC+JWT+ValidationPipe+**rate-limiting**+audit maintenant ; zero-trust/MFA-SMS/vault/mesh en V2+ | sécurité priorité #1 MAIS proportionnée MVP (Ch.3 décision équilibrée) · cheap+fort d'abord | zero-trust complet immédiat (over-eng) | +@nestjs/throttler +Dependabot +Sentry +MFA-TOTP admin | 🟡 Proposé |
 | ADR-013 | Contrat comportemental IA : chaque décision IA/agent = explicable (WHY) + traçable (audit) + jamais d'action sans trace | Partie 10 §8 + Ch.8 + Ch.6.8 · renforce ADR-010 | IA « boîte noire » | rationale loggé + explication exposée UI | 🟡 Proposé |
 | **ADR-014-R** | **Réviser** l'ordre de priorité v0.1 → adopter la hiérarchie Ch.3.2 (Sécurité N1…) | résout C-005 · Ch.3.2 = cadre officiel détaillé, ajoute Sécurité (Ch.1.3 « sécurité > facilité ») · UX N5 préserve l'atout réel | garder v0.1 · fusion hybride | change l'ordre de tranchage des conflits futurs | 🟡 Proposé (PO) |
 | ADR-015 | Tests unitaires obligatoires sur modules critiques avant modif (paiement/carbone/contrats/matching) | Ch.4.8 stabilisation + 4.5 non-régression · finance = risque | tests plus tard / manuels | jest specs + gate CI | 🟡 Proposé |
 | ADR-016 | Sécurité des agents IA : sandbox + validation humaine des actions critiques + décisions loggées + interdiction accès direct paiement/contrats | Ch.6.8 · étend ADR-013 · « agents puissants mais contrôlés » | agents pleinement autonomes | garde-fous couche agents (V3) | 🟡 Proposé |
 | ADR-017 | **Pilier 6** : Économie Circulaire Citoyenne & Publique (B2C+B2G) = 6ᵉ pilier officiel, phasé (données municipales B2G d'abord, collecte citoyenne B2C ensuite) | relie citoyens/entreprises/recycleurs/public · Cameroun-first (collecte informelle) · effet réseau | rester B2B pur | nouveaux rôles (CITIZEN/PUBLIC), modèles collecte, portail municipal | 🟡 Proposé (attend confirmation périmètre + .docx) |
+| ADR-018 | Moteur de valorisation (WF2) : **filières rules-based d'abord** (map catégorie→filières + heuristiques rendement/coût/CO₂/valeur), enrichissement IA ensuite | valeur immédiate sans IA/coût · Cameroun-first · extensible | full-AI immédiat (bloqué C-001/R8/coût) | nouveau module valorization + data filières | 🟡 Proposé |
+| ADR-026 | **Bourse SCCEM** = étendre marketplace en 4 marchés (spot dynamique / contractuel / enchères / ESG-premium) + moteur pricing (spot heuristique now, LME/prédictif V2) ; settlement **off-chain** (MoMo/escrow), blockchain LT | réel a les germes (marketplace+carbone) · valeur éco · Cameroun-first | tout-blockchain immédiat (R9) | modèles Market/Order/Bid + pricing + matching pgvector | 🟡 Proposé |
+| ADR-024 | DPP **standard-aligné** (GS1 Digital Link / CIRPASS / EPCIS 2.0 / W3C VC) au lieu de PDF+QR custom | interopérabilité + conformité EU + export · réutilise QR existant | garder format custom | +identifiant GS1 + schéma CIRPASS (garder PDF+QR MVP) | 🟡 Proposé |
+| ADR-025 | Module **Smart Factory (SFITE)** = couche transformation (aval SCSRE) : filières + IA industrielle + Digital Twin + MES/SCADA (ISA-95/IEC62443/OPC-UA) | orchestre la transformation locale · industrialisation Cameroun | rester collecte/marketplace | très gros programme V2-V3 (Industry 4.0) | 🟡 Proposé |
+| ADR-022 | Module **Centres Intelligents (SCSRE)** = backbone opérationnel Pilier 6 · modèles Center/Lot/Stock/Processing · MVP centres+pesage+paiement+stock+publication auto | opérationnalise le Pilier 6 · Cameroun-first · effet réseau national | rester marketplace pure | gros programme phasé (V2+) | 🟡 Proposé |
+| ADR-023 | Stockage fichiers en **object storage** (Cloudflare R2 / Supabase) au lieu de base64 | **résout R10** (bande passante) · scalable · URLs · limite 15MB levée | garder base64 | migration upload → storage + URL en base | 🟡 Proposé |
+| ADR-020 | Logistique temps réel (WF6) : sélection transporteur rules-based + **GPS-live via WebSocket** (étend Socket.io existant) ; ETA/géofencing/carrier-API en couche V2 | réel a déjà Socket.io+PoD · valeur démo forte · Cameroun-first | Kafka/event-stream lourd immédiat | gateway WS position + carte live + événements | 🟡 Proposé |
+| ADR-021 | Apprentissage continu (WF9/10) **avec contrôle humain** : learning sur données validées, décisions critiques toujours validées + explicables + tracées | Ch.4 mémoire + ADR-013/016 · « jamais action non traçable » | auto-apprentissage sans garde-fou | pipeline feedback + human-in-loop critique | 🟡 Proposé |
+| ADR-019 | Matching **7 scores** (WF3) : étendre `calculateScore`/`ScoreBreakdown` 4→7 (éco/carbone/régl/risque calculables maintenant) ; signaux IA (images/docs/marché) en couche V2 optionnelle | étend ADR-010 hybride · non-régression (tests présents) · explicabilité WHY (ADR-013) · socle sans dépendance IA | attendre l'IA complète | extend matching + tests | 🟡 Proposé |
 
 ---
 
@@ -308,3 +363,12 @@
 - **v0.33** : `contracts.service.spec.ts` (3 tests : totalPrice 260k, double-signature→SIGNED, signature simple). Total **12/12 ✓** (3 suites). R13 : 3 modules critiques couverts. Reste gate CI + passport.
 - **v0.34** : lot P1 commité (69dfe7a). Matching-WHY constaté **déjà présent** (scoreBreakdown affiché) — registre corrigé.
 - **v0.35** : **Pilier 6 — Économie Circulaire Citoyenne & Publique (B2C+B2G)** ajouté (mission→6 piliers + écart + **ADR-017 proposé**). Extension SSOT, rien écrasé. En attente : confirmation périmètre + décision régénération .docx.
+- **v0.36** : **Workflows 1-3** (extension SSOT) intégrés — WF1 Acquisition IA (multi-input+OCR+Vision+DPP auto), WF2 Valorisation (filières+ranking, **ADR-018** rules-first), WF3 Matching 7-scores (**ADR-019** étend ADR-010). 4 écarts. WF2+WF3-socle implémentables sans IA ; WF1-OCR/Vision bloqué C-001/R8. Rien implémenté (attente validation).
+- **v0.44** : **Master Execution Prompt Global** fusionné (synthèse) — **9 piliers officiels** cartographiés (section dédiée) ⇄ registre/ADR. Valide méthode (2 vues, Cameroun-first, WHY/traçable/simulé/human-validation = ADR-013/016/021). **JALON : toutes extensions stratégiques traitées.** Aucun ADR/contradiction nouveau.
+- **v0.43** : **SCCEN** (spec B2C concrète du Pilier 6, MVP Douala) fusionné dans ADR-017 — app citoyen (photo→IA→prix→collecte→paiement→récompenses). Nouveaux écarts : récompenses/score citoyen, Edge-AI mobile. Wave ajouté à ADR-011. Confirme WF1/ADR-011/018.
+- **v0.42** : **SGD-SCI Infra mondiale** fusionné — **duplique** Partie4/Ch9/Ch15 (K8s/multi-région/Kafka/edge/GPU/observabilité/zero-trust/IaC = déjà en registre). **Phase-1 Cameroun (1 région, stack simplifiée) = réel Vercel+Render+Neon ✅** (validé par SSOT). Aucune contradiction/ADR/écart nouveau.
+- **v0.41** : **SGAADS Cerveau/IA autonome** intégré — re-spécifie Master Control (Ch.11)+agents(Ch.14)+WF9/10. Confirme **ADR-013/016/021** (explicabilité/sandbox/contrôle humain). Nouveau : Rule Engine + Moteur de simulation (2 écarts). Réel = règles hardcodées. Programme V2-V3.
+- **v0.40** : **SCCEM Bourse** (extension marketplace) intégré — 4 marchés (spot/contractuel/enchères/ESG) + pricing dynamique + LME (**ADR-026**). Réel = germes ✅ (marketplace+contrats+marché carbone). Spot-heuristique+enchères MVP-able ; LME/blockchain LT (R9). Settlement off-chain (ADR-011).
+- **v0.39** : **SFITE Usines Intelligentes** (couche transformation, aval SCSRE) intégré — filières détaillées (seed ADR-018), IA industrielle, Digital Twin, MES/SCADA/ISA-95 (**ADR-025**), **DPP standard** GS1/CIRPASS (**ADR-024**). Réel = 0 (Industry 4.0, V2-V3). Programme SCSRE+SFITE = gros → géré par roadmap (R2).
+- **v0.38** : **SCSRE Centres Intelligents** (backbone Pilier 6) intégré — modèles Center/Lot/Stock/Processing, workflow 24, IoT/DigitalTwin (**ADR-022**). **ADR-023** object storage (résout R10). ADR-011 enrichi (agrégateurs Campay/Fapshi/CinetPay/Paystack). Réel = 0 centre (programme V2+).
+- **v0.37** : **Workflows 4-10** intégrés — WF4 négociation IA, WF5 escrow+multi-paiement(Flutterwave)+calc taxes, WF6 logistique RT (**ADR-020** GPS-WebSocket), WF7 validation réception, WF8 MRV Scope1/2/3, WF9/10 IA-continue+apprentissage (**ADR-021** contrôle humain). **C-006** (libération auto fonds ↔ contrôle humain). Réel **partiel** sur WF6/7 (PoD/QR/Socket.io/DPP/crédit ✅). Rien implémenté.
