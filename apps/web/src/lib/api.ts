@@ -353,6 +353,18 @@ class ApiClient {
   async payCollection(id: string) {
     return this.request<any>(`/collection/${id}/pay`, { method: 'PATCH' });
   }
+
+  // Décaissement Mobile Money (pipeline réel, adaptateur swappable)
+  async requestPayout(amount: number, phone: string) {
+    return this.request<any>('/payments/payout', { method: 'POST', body: JSON.stringify({ amount, phone }) });
+  }
+  async getMyPayouts() {
+    return this.request<any>('/payments/payouts');
+  }
+  // Outil DEV temporaire : simule le webhook prestataire (retiré en prod)
+  async devConfirmPayout(providerRef: string, status: 'CONFIRMED' | 'FAILED' = 'CONFIRMED') {
+    return this.request<any>('/payments/dev/confirm', { method: 'POST', body: JSON.stringify({ providerRef, status }) });
+  }
 }
 
 export const api = new ApiClient();

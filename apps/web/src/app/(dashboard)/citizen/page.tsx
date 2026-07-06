@@ -23,12 +23,21 @@ const STATUS: Record<string, { label: string; color: string }> = {
   REJECTED: { label: 'Rejeté', color: '#ef4444' },
 };
 
+const PAYOUT_STATUS: Record<string, { label: string; color: string }> = {
+  PENDING: { label: 'Initié', color: '#94a3b8' },
+  PROCESSING: { label: 'En cours (prestataire)', color: '#f59e0b' },
+  CONFIRMED: { label: 'Reçu ✅', color: '#10b981' },
+  FAILED: { label: 'Échec (remboursé)', color: '#ef4444' },
+};
+
 export default function CitizenPage() {
   const [cat, setCat] = useState('PLASTICS');
   const [weight, setWeight] = useState(5);
   const [phone, setPhone] = useState('');
   const [requests, setRequests] = useState<any[]>([]);
   const [wallet, setWallet] = useState<any>(null);
+  const [payouts, setPayouts] = useState<any[]>([]);
+  const [payoutAmount, setPayoutAmount] = useState<number>(0);
   const [busy, setBusy] = useState<string | null>(null);
   const [toast, setToast] = useState('');
   const [ai, setAi] = useState<any>(null);
@@ -43,9 +52,10 @@ export default function CitizenPage() {
 
   const load = useCallback(async () => {
     try {
-      const [r, w] = await Promise.all([api.getMyCollections(), api.getWallet()]);
+      const [r, w, p] = await Promise.all([api.getMyCollections(), api.getWallet(), api.getMyPayouts()]);
       setRequests(r.data || []);
       setWallet(w.data || null);
+      setPayouts(p.data || []);
     } catch (e) { console.error(e); }
   }, []);
 
@@ -74,6 +84,16 @@ export default function CitizenPage() {
         const txs = base.transactions || [];
         const exists = w.tx && txs.some((t: any) => t.id === w.tx.id);
         return { ...base, balance: w.balance, transactions: exists ? txs : [w.tx, ...txs] };
+      });
+    });
+
+    // PUSH décaissement : statut payout appliqué en direct (PENDING→PROCESSING→CONFIRMED/FAILED).
+    s.on('payout:update', (p: any) => {
+      if (!p?.id || (myId && p.userId !== myId)) return;
+      setPayouts((prev) => {
+        const i = prev.findIndex((x) => x.id === p.id);
+        if (i === -1) return [p, ...prev];
+        const next = [...prev]; next[i] = { ...next[i], ...p }; return next;
       });
     });
 
@@ -110,6 +130,14 @@ export default function CitizenPage() {
   };
 
   const submit = () => act(null, () => api.submitCollection({ materialCategory: cat, declaredWeightKg: weight, phone: phone || undefined }), '✓ Demande créée');
+
+  // Décaissement réel vers Mobile Money (débit wallet → prestataire → webhook).
+  const doPayout = () => {
+    const amt = payoutAmount || Math.floor(wallet?.balance || 0);
+    if (amt < 100) { showToast('⚠ Minimum 100 FCFA'); return; }
+    if (!phone || phone.trim().length < 8) { showToast('⚠ Numéro Mobile Money requis'); return; }
+    act('payout', () => api.requestPayout(amt, phone), '💸 Décaissement initié');
+  };
 
   return (
     <div className="animate-fade-in" style={{ maxWidth: 960, margin: '0 auto' }}>
@@ -214,16 +242,55 @@ export default function CitizenPage() {
         )}
       </div>
 
+      {/* 3. Retrait Mobile Money (décaissement réel) */}
+      <div className="neo-card" style={{ padding: 24, marginTop: 20 }}>
+        <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>3. Retrait vers Mobile Money</h3>
+        <p style={{ fontSize: 11, color: '#64748b', marginBottom: 14 }}>Débit du wallet → ordre prestataire → règlement confirmé par webhook. Adaptateur actif : <b>dev</b> (aucun argent réel tant que les clés Campay/MTN ne sont pas fournies).</p>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 14 }}>
+          <input type="number" min={0} placeholder={`Montant (max ${Math.floor(wallet?.balance || 0)})`} value={payoutAmount || ''} onChange={(e) => setPayoutAmount(Number(e.target.value))}
+            style={{ width: 180, padding: 10, borderRadius: 10, border: '1.5px solid #1a2540', background: '#0c1527', color: '#e2e8f0' }} />
+          <span style={{ fontSize: 12, color: '#64748b' }}>vers le n° saisi plus haut</span>
+          <button type="button" onClick={doPayout} disabled={busy === 'payout'} className="btn-primary" style={{ marginLeft: 'auto', padding: '10px 18px' }}>
+            {busy === 'payout' ? '⏳ Envoi…' : '💸 Retirer'}
+          </button>
+        </div>
+        {payouts.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {payouts.map((p) => {
+              const st = PAYOUT_STATUS[p.status] || { label: p.status, color: '#94a3b8' };
+              return (
+                <div key={p.id} style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 10, alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #1a2540', fontSize: 13 }}>
+                  <div>
+                    <span style={{ fontWeight: 700 }}>{fcfa(p.amount)}</span> → {p.phone}
+                    <span style={{ color: st.color, fontWeight: 700, marginLeft: 8 }}>● {st.label}</span>
+                  </div>
+                  {/* Outil DEV : simule le webhook prestataire tant que les clés manquent */}
+                  {(p.status === 'PENDING' || p.status === 'PROCESSING') && (
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button className="btn-mini green" onClick={() => act('payout', () => api.devConfirmPayout(p.providerRef, 'CONFIRMED'), '✅ Confirmé')}>Confirmer</button>
+                      <button className="btn-mini" onClick={() => act('payout', () => api.devConfirmPayout(p.providerRef, 'FAILED'), 'Échec simulé')}>Échec</button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
       {/* Ledger */}
       {wallet?.transactions?.length > 0 && (
         <div className="neo-card" style={{ padding: 24, marginTop: 20 }}>
-          <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>3. Registre du wallet (ledger)</h3>
-          {wallet.transactions.map((t: any) => (
-            <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #1a2540', fontSize: 13 }}>
-              <span style={{ color: '#94a3b8' }}>{t.type} · {new Date(t.createdAt).toLocaleString('fr-FR')}</span>
-              <span style={{ fontWeight: 700, color: '#34d399' }}>+{fcfa(t.amount)}</span>
-            </div>
-          ))}
+          <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>4. Registre du wallet (ledger)</h3>
+          {wallet.transactions.map((t: any) => {
+            const debit = t.type === 'PAYOUT';
+            return (
+              <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #1a2540', fontSize: 13 }}>
+                <span style={{ color: '#94a3b8' }}>{t.type} · {new Date(t.createdAt).toLocaleString('fr-FR')}</span>
+                <span style={{ fontWeight: 700, color: debit ? '#f87171' : '#34d399' }}>{debit ? '−' : '+'}{fcfa(t.amount)}</span>
+              </div>
+            );
+          })}
         </div>
       )}
 

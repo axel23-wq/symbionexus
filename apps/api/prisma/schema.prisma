@@ -340,6 +340,34 @@ model SystemEvent {
   @@index([createdAt])
 }
 
+/// Décaissement réel vers Mobile Money (pipeline production, adaptateur swappable).
+/// Le statut est piloté par le webhook du prestataire (Campay/MTN/Orange) — pas de simulation permanente.
+model Payout {
+  id            String       @id @default(cuid())
+  userId        String
+  walletId      String
+  amount        Float
+  currency      String       @default("XAF")
+  phone         String
+  provider      String       @default("dev") // dev | campay | mtn | orange
+  providerRef   String? // identifiant de transaction côté prestataire
+  status        PayoutStatus @default(PENDING)
+  failureReason String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([providerRef])
+}
+
+enum PayoutStatus {
+  PENDING // créé, wallet débité, en attente d'envoi au prestataire
+  PROCESSING // accepté par le prestataire, en cours (attente webhook)
+  CONFIRMED // argent reçu par le citoyen (webhook succès)
+  FAILED // échec prestataire → wallet recrédité
+}
+
 enum Role {
   SELLER
   BUYER
