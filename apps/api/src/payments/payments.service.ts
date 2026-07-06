@@ -22,6 +22,7 @@ export class PayoutService {
 
   private async event(type: string, payload: any, userId?: string) {
     await this.prisma.systemEvent.create({ data: { type, payload, userId } });
+    this.gateway.emitLiveEvent({ type, payload, userId, createdAt: new Date() });
   }
   private async audit(userId: string, action: string, metadata?: any) {
     try { await this.prisma.auditLog.create({ data: { userId, action, status: 'SUCCESS', metadata } }); } catch { /* best-effort */ }

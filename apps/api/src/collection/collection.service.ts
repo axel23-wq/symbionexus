@@ -10,6 +10,12 @@ const PRICE_FCFA: Record<string, number> = {
   TEXTILE: 180, OILS: 38, GLASS: 43, CHEMICAL: 425,
 };
 
+// CO2 évité par kg recyclé (kg CO2e / kg matière) — facteurs indicatifs.
+const CO2_FACTOR: Record<string, number> = {
+  METALS: 4, PLASTICS: 2, BIOMASS: 0.5, WOOD: 0.9,
+  TEXTILE: 3, OILS: 1.5, GLASS: 0.3, CHEMICAL: 2,
+};
+
 @Injectable()
 export class CollectionService {
   constructor(
@@ -19,9 +25,10 @@ export class CollectionService {
     private video: VideoAnalysisService,
   ) {}
 
-  /** Journal d'événement immuable (event engine). */
+  /** Journal d'événement immuable (event engine) + diffusion live (salle de contrôle). */
   private async event(type: string, payload: any, userId?: string) {
     await this.prisma.systemEvent.create({ data: { type, payload, userId } });
+    this.gateway.emitLiveEvent({ type, payload, userId, createdAt: new Date() });
   }
 
   /** Piste d'audit réelle (AuditLog) — traçabilité de chaque action. */
@@ -123,8 +130,11 @@ export class CollectionService {
       where: { id }, data: { validatedWeightKg, finalValue, status: 'VALIDATED' },
     });
     await this.event('WeightValidated', { id, validatedWeightKg, finalValue }, req.userId);
+    await this.event('WeightVerified', { id, validatedWeightKg, category: req.materialCategory }, req.userId);
     await this.audit(req.userId, 'collection.validate', { id, validatedWeightKg, finalValue });
     await this.broadcast(updated);
+    // Boucle interne événementielle : Carbone → Notification → Analytics.
+    await this.afterWeightVerified(req.userId, req.materialCategory, validatedWeightKg, finalValue);
     return updated;
   }
 
@@ -152,6 +162,44 @@ export class CollectionService {
     // Push financier temps réel : solde + nouvelle ligne de ledger appliqués directement dans l'UI.
     this.gateway.emitWallet({ userId: req.userId, balance: result.wallet.balance, tx: result.walletTx });
     return { request: result.updated, wallet: result.wallet, amount };
+  }
+
+  /** Boucle interne : CarbonUpdated → NotificationSent → AnalyticsUpdated. */
+  private async afterWeightVerified(userId: string, category: string, weightKg: number, value: number) {
+    // 1) Carbone
+    const co2Kg = Math.round((weightKg * (CO2_FACTOR[category] ?? 1)) * 100) / 100;
+    await this.event('CarbonUpdated', { category, weightKg, co2Kg }, userId);
+    // 2) Notification réelle (persistée)
+    const notif = await this.prisma.notification.create({
+      data: { userId, type: 'SYSTEM', title: 'Pesée validée ✅', message: `${weightKg} kg de ${category} validés — ${value} FCFA, ${co2Kg} kg CO₂ évités.` },
+    });
+    await this.event('NotificationSent', { notifId: notif.id }, userId);
+    this.gateway.emitNotification(notif);
+    // 3) Analytics
+    await this.event('AnalyticsUpdated', { co2Kg, value }, userId);
+    this.gateway.emitAnalytics();
+  }
+
+  /** Agrégats plateforme temps réel (salle de contrôle). */
+  async getAnalytics() {
+    const [byStatus, paidAgg, carbonEvents, aiCount, payoutAgg, recent] = await Promise.all([
+      this.prisma.collectionRequest.groupBy({ by: ['status'], _count: true }),
+      this.prisma.walletTransaction.aggregate({ _sum: { amount: true }, where: { type: 'CREDIT' } }),
+      this.prisma.systemEvent.findMany({ where: { type: 'CarbonUpdated' }, select: { payload: true }, take: 2000 }),
+      this.prisma.systemEvent.count({ where: { type: 'VisionCompleted' } }),
+      this.prisma.payout.aggregate({ _sum: { amount: true }, where: { status: 'CONFIRMED' } }),
+      this.prisma.systemEvent.findMany({ orderBy: { createdAt: 'desc' }, take: 30 }),
+    ]);
+    const co2Total = Math.round(carbonEvents.reduce((s, e: any) => s + (e.payload?.co2Kg || 0), 0) * 100) / 100;
+    return {
+      collectionsByStatus: byStatus.map((b) => ({ status: b.status, count: b._count })),
+      collectionsTotal: byStatus.reduce((s, b) => s + b._count, 0),
+      creditedTotal: paidAgg._sum.amount || 0,
+      payoutConfirmedTotal: payoutAgg._sum.amount || 0,
+      co2Total,
+      aiAnalyses: aiCount,
+      recentEvents: recent,
+    };
   }
 
   async get(id: string) {

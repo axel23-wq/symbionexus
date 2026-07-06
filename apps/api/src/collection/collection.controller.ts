@@ -37,6 +37,12 @@ export class CollectionController {
     return { success: true, data: await this.service.myRequests(req.user.sub) };
   }
 
+  @Get('analytics')
+  @ApiOperation({ summary: 'Agrégats temps réel plateforme (salle de contrôle)' })
+  async analytics() {
+    return { success: true, data: await this.service.getAnalytics() };
+  }
+
   @Get('wallet')
   @ApiOperation({ summary: 'Mon SymbioWallet (solde + ledger)' })
   async wallet(@Req() req: any) {

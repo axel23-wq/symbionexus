@@ -344,6 +344,9 @@ class ApiClient {
   async getMyCollections() {
     return this.request<any>('/collection/my');
   }
+  async getAnalytics() {
+    return this.request<any>('/collection/analytics');
+  }
   async getWallet() {
     return this.request<any>('/collection/wallet');
   }

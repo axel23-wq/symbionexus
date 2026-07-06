@@ -20,4 +20,17 @@ export class CollectionGateway {
   emitVisionProgress(data: { userId: string; pct: number; frame?: number; total?: number; stage: string }) {
     this.server?.emit('vision:progress', data);
   }
+
+  // Flux d'événements live (salle de contrôle).
+  emitLiveEvent(evt: { type: string; payload?: any; userId?: string; createdAt?: Date }) {
+    this.server?.emit('event:live', evt);
+  }
+  // Indicateurs agrégés mis à jour (déclenche un refetch event-driven côté dashboard).
+  emitAnalytics(data?: any) {
+    this.server?.emit('analytics:update', data || {});
+  }
+  // Notification temps réel.
+  emitNotification(n: any) {
+    this.server?.emit('notification:new', n);
+  }
 }

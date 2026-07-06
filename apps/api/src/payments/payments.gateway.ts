@@ -13,4 +13,8 @@ export class PaymentsGateway {
   emitWallet(data: { userId: string; balance: number; tx: any }) {
     this.server?.emit('wallet:update', data);
   }
+
+  emitLiveEvent(evt: { type: string; payload?: any; userId?: string; createdAt?: Date }) {
+    this.server?.emit('event:live', evt);
+  }
 }
