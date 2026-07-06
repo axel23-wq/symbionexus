@@ -173,10 +173,16 @@ export default function CitizenPage() {
               <img src={photo} alt="déchet" style={{ width: 84, height: 84, objectFit: 'cover', borderRadius: 10, border: '1px solid #1a2540' }} />
               {ai && (
                 <div style={{ fontSize: 13, lineHeight: 1.7 }}>
-                  <div><b style={{ color: '#34d399' }}>{CATEGORY_INFO[ai.category]?.icon} {CATEGORY_INFO[ai.category]?.label || ai.category}</b> — confiance {(ai.confidence * 100) | 0}%</div>
-                  <div style={{ color: '#94a3b8' }}>Qualité matière : {(ai.quality * 100) | 0}% · Poids estimé : ~{ai.estimatedWeightKg} kg</div>
+                  <div><b style={{ color: '#34d399' }}>{CATEGORY_INFO[ai.category]?.icon} {CATEGORY_INFO[ai.category]?.label || ai.category}</b> — {ai.material} · confiance {(ai.confidence * 100) | 0}%</div>
+                  <div style={{ color: '#94a3b8' }}>Qualité {(ai.quality * 100) | 0}% · Recyclabilité {(ai.recyclability * 100) | 0}% · ~{ai.estimatedWeightKg} kg</div>
                   <div style={{ color: '#94a3b8' }}>Prix IA : {ai.pricePerKg} F/kg → <b style={{ color: '#34d399' }}>{fcfa(ai.estimatedValue)}</b></div>
-                  <div style={{ fontSize: 10, color: '#475569' }}>features px: {ai.features.width}×{ai.features.height} · lum {ai.features.brightness} · sat {ai.features.saturation} · net {ai.features.sharpness}</div>
+                  {ai.objects?.length > 0 && (
+                    <div style={{ fontSize: 11, color: '#64748b' }}>Objets : {ai.objects.map((o: any) => `${o.label} (${(o.confidence * 100) | 0}%)`).join(', ')}</div>
+                  )}
+                  {ai.contamination?.length > 0 && (
+                    <div style={{ fontSize: 11, color: '#f59e0b' }}>⚠ Contamination : {ai.contamination.join(', ')}</div>
+                  )}
+                  <div style={{ fontSize: 10, color: '#475569' }}>moteur : {ai.provider}{ai.notes ? ` · ${ai.notes}` : ''}</div>
                 </div>
               )}
             </div>

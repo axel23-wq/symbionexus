@@ -1,7 +1,7 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CollectionGateway } from './collection.gateway';
-import { AiVisionService } from './ai-vision.service';
+import { VISION_PROVIDER, VisionProvider } from './vision/vision-provider.interface';
 
 // Prix d'achat citoyen (FCFA/kg) — source autoritaire backend.
 const PRICE_FCFA: Record<string, number> = {
@@ -14,7 +14,7 @@ export class CollectionService {
   constructor(
     private prisma: PrismaService,
     private gateway: CollectionGateway,
-    private vision: AiVisionService,
+    @Inject(VISION_PROVIDER) private vision: VisionProvider,
   ) {}
 
   /** Journal d'événement immuable (event engine). */
