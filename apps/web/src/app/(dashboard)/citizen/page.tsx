@@ -43,8 +43,11 @@ export default function CitizenPage() {
   const [ai, setAi] = useState<any>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [photo, setPhoto] = useState<string>('');
+  const [visionPct, setVisionPct] = useState(0);
+  const [visionStage, setVisionStage] = useState('');
   const socketRef = useRef<Socket | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
+  const videoRef = useRef<HTMLInputElement | null>(null);
 
   const pricePerKg = PRICE_FCFA[cat] || 0;
   const value = useMemo(() => Math.max(0, weight) * pricePerKg, [weight, pricePerKg]);
@@ -97,6 +100,12 @@ export default function CitizenPage() {
       });
     });
 
+    // Progression Vision IA (photo/vidéo) en direct.
+    s.on('vision:progress', (d: any) => {
+      if (myId && d.userId !== myId) return;
+      setVisionPct(d.pct); setVisionStage(d.stage || '');
+    });
+
     return () => { s.disconnect(); };
   }, [load]);
 
@@ -124,6 +133,26 @@ export default function CitizenPage() {
         setWeight(Math.max(1, Math.round(d.estimatedWeightKg)));
         showToast(`🧠 IA : ${d.category} détecté`);
       } catch (err: any) { showToast('⚠ ' + (err?.message || 'Analyse échouée')); }
+      finally { setAnalyzing(false); }
+    };
+    reader.readAsDataURL(f);
+  };
+
+  // Vidéo : keyframes FFmpeg backend → analyse IA par frame → fusion (progress temps réel).
+  const onVideo = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = async () => {
+      setPhoto(''); setAi(null); setAnalyzing(true); setVisionPct(0); setVisionStage('Extraction des frames…');
+      try {
+        const res = await api.analyzeVideo(String(reader.result));
+        const d = res.data;
+        setAi(d);
+        if (PRICE_FCFA[d.category] != null) setCat(d.category);
+        setWeight(Math.max(1, Math.round(d.estimatedWeightKg)));
+        showToast(`🎬 Vidéo analysée (${d.frames} frames)`);
+      } catch (err: any) { showToast('⚠ ' + (err?.message || 'Analyse vidéo échouée')); }
       finally { setAnalyzing(false); }
     };
     reader.readAsDataURL(f);
@@ -162,11 +191,25 @@ export default function CitizenPage() {
         <div style={{ marginBottom: 16, padding: 14, borderRadius: 12, border: '1.5px dashed rgba(16,185,129,0.4)', background: 'rgba(16,185,129,0.04)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
             <button type="button" onClick={() => fileRef.current?.click()} disabled={analyzing} className="btn-primary" style={{ padding: '10px 16px' }}>
-              {analyzing ? '🧠 Analyse IA en cours…' : '📸 Analyser une photo (IA Vision)'}
+              {analyzing ? '🧠 Analyse IA…' : '📸 Photo (IA Vision)'}
             </button>
-            <span style={{ fontSize: 11, color: '#64748b' }}>L&apos;IA détecte la matière et pré-estime le poids/prix. Pesée réelle confirmée à la collecte.</span>
+            <button type="button" onClick={() => videoRef.current?.click()} disabled={analyzing} className="btn-primary" style={{ padding: '10px 16px' }}>
+              🎬 Vidéo (keyframes IA)
+            </button>
+            <span style={{ fontSize: 11, color: '#64748b' }}>Détection matière + poids/prix. Pesée réelle confirmée à la collecte.</span>
             <input ref={fileRef} type="file" accept="image/*" onChange={onPhoto} style={{ display: 'none' }} />
+            <input ref={videoRef} type="file" accept="video/*" onChange={onVideo} style={{ display: 'none' }} />
           </div>
+          {analyzing && (
+            <div style={{ marginTop: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>
+                <span>{visionStage || 'Analyse IA…'}</span><span>{visionPct}%</span>
+              </div>
+              <div style={{ height: 6, borderRadius: 6, background: '#1a2540', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${visionPct}%`, background: 'linear-gradient(90deg,#10b981,#34d399)', transition: 'width .3s' }} />
+              </div>
+            </div>
+          )}
           {photo && (
             <div style={{ display: 'flex', gap: 14, marginTop: 12, alignItems: 'center', flexWrap: 'wrap' }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}

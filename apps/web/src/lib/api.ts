@@ -338,6 +338,9 @@ class ApiClient {
   async analyzeCollection(image: string) {
     return this.request<any>('/collection/analyze', { method: 'POST', body: JSON.stringify({ image }) });
   }
+  async analyzeVideo(video: string) {
+    return this.request<any>('/collection/analyze-video', { method: 'POST', body: JSON.stringify({ video }) });
+  }
   async getMyCollections() {
     return this.request<any>('/collection/my');
   }

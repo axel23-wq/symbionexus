@@ -2,6 +2,7 @@ import { Injectable, Inject, NotFoundException, BadRequestException } from '@nes
 import { PrismaService } from '../prisma/prisma.service';
 import { CollectionGateway } from './collection.gateway';
 import { VISION_PROVIDER, VisionProvider } from './vision/vision-provider.interface';
+import { VideoAnalysisService } from './vision/video-analysis.service';
 
 // Prix d'achat citoyen (FCFA/kg) — source autoritaire backend.
 const PRICE_FCFA: Record<string, number> = {
@@ -15,6 +16,7 @@ export class CollectionService {
     private prisma: PrismaService,
     private gateway: CollectionGateway,
     @Inject(VISION_PROVIDER) private vision: VisionProvider,
+    private video: VideoAnalysisService,
   ) {}
 
   /** Journal d'événement immuable (event engine). */
@@ -34,15 +36,32 @@ export class CollectionService {
    * Analyse pixels backend (jimp), calcule le prix, persiste events + audit, broadcast.
    */
   async analyzeMedia(userId: string, imageBase64: string) {
-    await this.event('MediaUploaded', { bytes: (imageBase64 || '').length }, userId);
+    await this.event('MediaUploaded', { kind: 'image', bytes: (imageBase64 || '').length }, userId);
+    await this.event('VisionStarted', { kind: 'image', provider: this.vision.name }, userId);
+    this.gateway.emitVisionProgress({ userId, pct: 10, stage: 'Analyse IA…' });
     const ai = await this.vision.analyze(imageBase64);
-    await this.event('AIVisionProcessed', ai, userId);
+    this.gateway.emitVisionProgress({ userId, pct: 100, stage: 'Analyse terminée' });
+    await this.event('VisionCompleted', ai, userId);
+    return this.priceAndReturn(userId, ai);
+  }
 
+  /** Pipeline vidéo : keyframes FFmpeg → analyse par frame → fusion (progress temps réel). */
+  async analyzeVideoMedia(userId: string, videoBase64: string) {
+    await this.event('MediaUploaded', { kind: 'video', bytes: (videoBase64 || '').length }, userId);
+    await this.event('VisionStarted', { kind: 'video', provider: this.vision.name }, userId);
+    const ai = await this.video.analyzeVideo(videoBase64, (pct, frame, total) => {
+      this.gateway.emitVisionProgress({ userId, pct, frame, total, stage: `Frame ${frame}/${total}` });
+    });
+    await this.event('VisionCompleted', ai, userId);
+    return this.priceAndReturn(userId, ai);
+  }
+
+  /** Prix + PriceCalculated + audit, commun photo/vidéo. */
+  private async priceAndReturn(userId: string, ai: any) {
     const pricePerKg = PRICE_FCFA[ai.category] ?? 100;
     const estimatedValue = Math.round(ai.estimatedWeightKg * pricePerKg);
     await this.event('PriceCalculated', { category: ai.category, pricePerKg, estimatedWeightKg: ai.estimatedWeightKg, estimatedValue }, userId);
-    await this.audit(userId, 'collection.vision.analyze', { category: ai.category, confidence: ai.confidence, estimatedValue });
-
+    await this.audit(userId, 'collection.vision.analyze', { category: ai.category, provider: ai.provider, confidence: ai.confidence, estimatedValue });
     return { ...ai, pricePerKg, estimatedValue };
   }
 

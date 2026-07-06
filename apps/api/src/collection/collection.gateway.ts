@@ -15,4 +15,9 @@ export class CollectionGateway {
   emitWallet(data: { userId: string; balance: number; tx: any }) {
     this.server?.emit('wallet:update', data);
   }
+
+  // Progression de l'analyse Vision IA (photo/vidéo) en direct.
+  emitVisionProgress(data: { userId: string; pct: number; frame?: number; total?: number; stage: string }) {
+    this.server?.emit('vision:progress', data);
+  }
 }

@@ -17,6 +17,13 @@ export class CollectionController {
     return { success: true, data, message: 'Analyse IA effectuée' };
   }
 
+  @Post('analyze-video')
+  @ApiOperation({ summary: 'IA Vision vidéo : keyframes FFmpeg → analyse par frame → fusion (VisionStarted→VisionCompleted)' })
+  async analyzeVideo(@Req() req: any, @Body() dto: { video: string }) {
+    const data = await this.service.analyzeVideoMedia(req.user.sub, dto.video);
+    return { success: true, data, message: 'Analyse vidéo effectuée' };
+  }
+
   @Post()
   @ApiOperation({ summary: 'Citoyen soumet un déchet (WasteSubmitted)' })
   async submit(@Req() req: any, @Body() dto: { materialCategory: string; declaredWeightKg: number; phone?: string; latitude?: number; longitude?: number }) {
