@@ -62,5 +62,11 @@
   "common.copy": "Kopieren",
   "common.copied": "Kopiert!",
   "common.active": "Aktiv",
-  "common.revoked": "Widerrufen"
+  "common.revoked": "Widerrufen",
+  "nav.citizen": "Bürger — Abfall → Geld",
+  "nav.controlRoom": "Kontrollraum",
+  "nav.admin": "Admin — Gesamtübersicht",
+  "nav.adminAccounts": "Kontofreigabe",
+  "nav.sectionMain": "Navigation",
+  "nav.sectionAdmin": "Verwaltung"
 }

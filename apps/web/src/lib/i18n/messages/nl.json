@@ -62,5 +62,11 @@
   "common.copy": "Kopiëren",
   "common.copied": "Gekopieerd!",
   "common.active": "Actief",
-  "common.revoked": "Ingetrokken"
+  "common.revoked": "Ingetrokken",
+  "nav.citizen": "Burger — Afval → Geld",
+  "nav.controlRoom": "Controlekamer",
+  "nav.admin": "Admin — Overzicht",
+  "nav.adminAccounts": "Accountvalidatie",
+  "nav.sectionMain": "Navigatie",
+  "nav.sectionAdmin": "Beheer"
 }

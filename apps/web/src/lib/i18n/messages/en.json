@@ -62,5 +62,11 @@
   "common.copy": "Copy",
   "common.copied": "Copied!",
   "common.active": "Active",
-  "common.revoked": "Revoked"
+  "common.revoked": "Revoked",
+  "nav.citizen": "Citizen — Waste → Cash",
+  "nav.controlRoom": "Control Room",
+  "nav.admin": "Admin — Overview",
+  "nav.adminAccounts": "Account Approval",
+  "nav.sectionMain": "Navigation",
+  "nav.sectionAdmin": "Administration"
 }

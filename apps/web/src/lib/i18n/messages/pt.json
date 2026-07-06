@@ -62,5 +62,11 @@
   "common.copy": "Copiar",
   "common.copied": "Copiado!",
   "common.active": "Ativa",
-  "common.revoked": "Revogada"
+  "common.revoked": "Revogada",
+  "nav.citizen": "Cidadão — Resíduos → Dinheiro",
+  "nav.controlRoom": "Sala de controlo",
+  "nav.admin": "Admin — Visão global",
+  "nav.adminAccounts": "Validação de contas",
+  "nav.sectionMain": "Navegação",
+  "nav.sectionAdmin": "Administração"
 }

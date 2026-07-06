@@ -62,5 +62,11 @@
   "common.copy": "Nakili",
   "common.copied": "Imenakiliwa!",
   "common.active": "Inatumika",
-  "common.revoked": "Imebatilishwa"
+  "common.revoked": "Imebatilishwa",
+  "nav.citizen": "Raia — Taka → Pesa",
+  "nav.controlRoom": "Chumba cha udhibiti",
+  "nav.admin": "Msimamizi — Muhtasari",
+  "nav.adminAccounts": "Uthibitisho wa akaunti",
+  "nav.sectionMain": "Urambazaji",
+  "nav.sectionAdmin": "Utawala"
 }

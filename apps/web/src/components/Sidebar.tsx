@@ -17,8 +17,8 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { icon: '📊', tkey: 'nav.dashboard', href: '/dashboard' },
   { icon: '🏪', tkey: 'nav.marketplace', href: '/marketplace' },
-  { icon: '♻️', label: 'Citoyen — Déchets → Argent', href: '/citizen' },
-  { icon: '🛰️', label: 'Salle de contrôle', href: '/control-room' },
+  { icon: '♻️', tkey: 'nav.citizen', href: '/citizen' },
+  { icon: '🛰️', tkey: 'nav.controlRoom', href: '/control-room' },
   { icon: '📋', tkey: 'nav.listings', href: '/listings', roles: ['SELLER'] },
   { icon: '🤖', tkey: 'nav.matches', href: '/matches' },
   { icon: '📝', tkey: 'nav.contracts', href: '/contracts' },
@@ -28,8 +28,8 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 const ADMIN_ITEMS: NavItem[] = [
-  { icon: '⚡', label: 'Admin — Vue globale', href: '/admin' },
-  { icon: '✅', label: 'Validation comptes', href: '/admin/accounts' },
+  { icon: '⚡', tkey: 'nav.admin', href: '/admin' },
+  { icon: '✅', tkey: 'nav.adminAccounts', href: '/admin/accounts' },
 ];
 
 export default function Sidebar() {
@@ -58,7 +58,7 @@ export default function Sidebar() {
 
       {/* Main nav */}
       <nav className="nav-section">
-        <div className="nav-section-title">Navigation</div>
+        <div className="nav-section-title">{t('nav.sectionMain')}</div>
         {filteredItems.map((item) => (
           <Link
             key={item.href}
@@ -77,7 +77,7 @@ export default function Sidebar() {
       {/* Admin section */}
       {user.role === 'ADMIN' && (
         <nav className="nav-section">
-          <div className="nav-section-title">Administration</div>
+          <div className="nav-section-title">{t('nav.sectionAdmin')}</div>
           {ADMIN_ITEMS.map((item) => (
             <Link
               key={item.href}
@@ -85,7 +85,7 @@ export default function Sidebar() {
               className={`nav-item ${pathname === item.href ? 'active' : ''}`}
             >
               <span className="nav-item-icon">{item.icon}</span>
-              <span>{item.label}</span>
+              <span>{item.tkey ? t(item.tkey) : item.label}</span>
             </Link>
           ))}
         </nav>

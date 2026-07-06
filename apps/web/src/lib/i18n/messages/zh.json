@@ -62,5 +62,11 @@
   "common.copy": "复制",
   "common.copied": "已复制！",
   "common.active": "有效",
-  "common.revoked": "已撤销"
+  "common.revoked": "已撤销",
+  "nav.citizen": "市民 — 垃圾 → 现金",
+  "nav.controlRoom": "控制室",
+  "nav.admin": "管理 — 总览",
+  "nav.adminAccounts": "账户审核",
+  "nav.sectionMain": "导航",
+  "nav.sectionAdmin": "管理"
 }

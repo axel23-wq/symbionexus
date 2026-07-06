@@ -62,5 +62,11 @@
   "common.copy": "نسخ",
   "common.copied": "تم النسخ!",
   "common.active": "نشط",
-  "common.revoked": "مُبطل"
+  "common.revoked": "مُبطل",
+  "nav.citizen": "المواطن — نفايات ← مال",
+  "nav.controlRoom": "غرفة التحكم",
+  "nav.admin": "المشرف — نظرة عامة",
+  "nav.adminAccounts": "اعتماد الحسابات",
+  "nav.sectionMain": "التنقل",
+  "nav.sectionAdmin": "الإدارة"
 }
