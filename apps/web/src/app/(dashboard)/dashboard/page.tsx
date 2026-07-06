@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
+import { useTranslation } from '@/lib/i18n/LanguageProvider';
 import Link from 'next/link';
 
 const DashboardCharts = dynamic(() => import('@/components/DashboardCharts'), { ssr: false });
@@ -27,6 +28,7 @@ interface DashboardData {
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [data, setData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -47,26 +49,26 @@ export default function DashboardPage() {
 
   const stats = data?.overview
     ? [
-        { icon: '📋', label: 'Annonces actives', value: data.overview.activeListings, color: '#3b82f6' },
-        { icon: '🤖', label: 'Matchs en attente', value: data.overview.pendingMatches, color: '#f59e0b' },
-        { icon: '📝', label: 'Contrats actifs', value: data.overview.activeContracts, color: '#8b5cf6' },
-        { icon: '✅', label: 'Contrats complétés', value: data.overview.completedContracts, color: '#10b981' },
-        { icon: '🌱', label: 'CO₂ évité (t)', value: data.overview.co2Avoided.toFixed(1), color: '#059669' },
-        { icon: '💰', label: 'Revenus (FCFA)', value: data.overview.revenue.toLocaleString('fr-FR'), color: '#f59e0b' },
+        { icon: '📋', label: t('dash.stat.activeListings'), value: data.overview.activeListings, color: '#3b82f6' },
+        { icon: '🤖', label: t('dash.stat.pendingMatches'), value: data.overview.pendingMatches, color: '#f59e0b' },
+        { icon: '📝', label: t('dash.stat.activeContracts'), value: data.overview.activeContracts, color: '#8b5cf6' },
+        { icon: '✅', label: t('dash.stat.completedContracts'), value: data.overview.completedContracts, color: '#10b981' },
+        { icon: '🌱', label: t('dash.stat.co2'), value: data.overview.co2Avoided.toFixed(1), color: '#059669' },
+        { icon: '💰', label: t('dash.stat.revenue'), value: data.overview.revenue.toLocaleString('fr-FR'), color: '#f59e0b' },
       ]
     : [];
 
   const quickActions =
     user?.role === 'SELLER'
       ? [
-          { icon: '➕', label: 'Nouvelle annonce', href: '/listings/new', color: 'var(--gradient-primary)' },
-          { icon: '🤖', label: 'Lancer matchmaking', href: '/matches', color: 'linear-gradient(135deg, #3b82f6, #8b5cf6)' },
-          { icon: '📊', label: 'Voir mes annonces', href: '/listings', color: 'linear-gradient(135deg, #f59e0b, #f97316)' },
+          { icon: '➕', label: t('dash.action.newListing'), href: '/listings/new', color: 'var(--gradient-primary)' },
+          { icon: '🤖', label: t('dash.action.runMatch'), href: '/matches', color: 'linear-gradient(135deg, #3b82f6, #8b5cf6)' },
+          { icon: '📊', label: t('dash.action.myListings'), href: '/listings', color: 'linear-gradient(135deg, #f59e0b, #f97316)' },
         ]
       : [
-          { icon: '🔍', label: 'Explorer marketplace', href: '/marketplace', color: 'var(--gradient-primary)' },
-          { icon: '🤖', label: 'Mes matchs', href: '/matches', color: 'linear-gradient(135deg, #3b82f6, #8b5cf6)' },
-          { icon: '🌱', label: 'Crédits carbone', href: '/carbon', color: 'linear-gradient(135deg, #10b981, #059669)' },
+          { icon: '🔍', label: t('dash.action.explore'), href: '/marketplace', color: 'var(--gradient-primary)' },
+          { icon: '🤖', label: t('dash.action.myMatches'), href: '/matches', color: 'linear-gradient(135deg, #3b82f6, #8b5cf6)' },
+          { icon: '🌱', label: t('dash.action.carbon'), href: '/carbon', color: 'linear-gradient(135deg, #10b981, #059669)' },
         ];
 
   return (
@@ -75,15 +77,15 @@ export default function DashboardPage() {
       <div className="page-header">
         <div>
           <h1 className="page-title">
-            Bonjour, {user?.firstName} 👋
+            {t('dash.hello')}, {user?.firstName} 👋
           </h1>
           <p className="page-subtitle">
-            {user?.company?.name} — {user?.role === 'SELLER' ? 'Vendeur' : user?.role === 'BUYER' ? 'Acheteur' : user?.role}
+            {user?.company?.name} — {user?.role === 'SELLER' ? t('role.seller') : user?.role === 'BUYER' ? t('role.buyer') : user?.role}
           </p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div className="badge badge-primary" style={{ fontSize: '0.8rem', padding: '6px 16px' }}>
-            ⭐ Trust Score: {((data?.overview.trustScore || 0.5) * 100).toFixed(0)}%
+            ⭐ {t('dash.trustScore')}: {((data?.overview.trustScore || 0.5) * 100).toFixed(0)}%
           </div>
         </div>
       </div>
@@ -101,24 +103,24 @@ export default function DashboardPage() {
         <div className="node-widget">
           <div style={{ padding: '28px 32px' }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 11, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#34d399', marginBottom: 10 }}>
-              <span>🧠</span> Noyau IA de Matchmaking
+              <span>🧠</span> {t('dash.core.tag')}
             </div>
-            <h2 style={{ fontSize: 22, fontWeight: 800, color: '#f1f5f9', marginBottom: 8 }}>Flux de matières en temps réel</h2>
+            <h2 style={{ fontSize: 22, fontWeight: 800, color: '#f1f5f9', marginBottom: 8 }}>{t('dash.core.title')}</h2>
             <p style={{ fontSize: 14, color: '#94a3b8', lineHeight: 1.6, maxWidth: 520 }}>
-              Le noyau analyse en continu vos matières secondaires, l&apos;énergie et la circularité pour proposer les meilleurs appariements industriels.
+              {t('dash.core.desc')}
             </p>
             <div style={{ display: 'flex', gap: 28, marginTop: 18 }}>
               <div>
                 <div style={{ fontSize: 22, fontWeight: 800, color: '#22d3ee' }}>{data?.overview.pendingMatches ?? 0}</div>
-                <div style={{ fontSize: 11, color: '#64748b' }}>Matchs en attente</div>
+                <div style={{ fontSize: 11, color: '#64748b' }}>{t('dash.stat.pendingMatches')}</div>
               </div>
               <div>
                 <div style={{ fontSize: 22, fontWeight: 800, color: '#a855f7' }}>{data?.overview.activeListings ?? 0}</div>
-                <div style={{ fontSize: 11, color: '#64748b' }}>Annonces actives</div>
+                <div style={{ fontSize: 11, color: '#64748b' }}>{t('dash.stat.activeListings')}</div>
               </div>
               <div>
                 <div style={{ fontSize: 22, fontWeight: 800, color: '#34d399' }}>{((data?.overview.trustScore || 0.5) * 100).toFixed(0)}%</div>
-                <div style={{ fontSize: 11, color: '#64748b' }}>Trust Score</div>
+                <div style={{ fontSize: 11, color: '#64748b' }}>{t('dash.trustScore')}</div>
               </div>
             </div>
           </div>
@@ -225,7 +227,7 @@ export default function DashboardPage() {
           alignItems: 'center',
           gap: '8px',
         }}>
-          📋 Activité récente
+          📋 {t('dash.recent.title')}
         </h2>
 
         {data?.recentContracts && data.recentContracts.length > 0 ? (
@@ -248,7 +250,7 @@ export default function DashboardPage() {
                     </div>
                     <div>
                       <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>
-                        {contract.match?.listing?.title || 'Contrat'}
+                        {contract.match?.listing?.title || t('dash.recent.contract')}
                       </div>
                       <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
                         {contract.sellerCompany?.name} → {contract.buyerCompany?.name}
@@ -277,11 +279,11 @@ export default function DashboardPage() {
             color: 'var(--color-text-muted)',
           }}>
             <div style={{ fontSize: '2rem', marginBottom: '12px' }}>📋</div>
-            <p>Aucune activité récente</p>
+            <p>{t('dash.recent.empty')}</p>
             <p style={{ fontSize: '0.85rem', marginTop: '8px' }}>
-              Commencez par{' '}
+              {t('dash.recent.startBy')}{' '}
               <Link href={user?.role === 'SELLER' ? '/listings/new' : '/marketplace'}>
-                {user?.role === 'SELLER' ? 'créer une annonce' : 'explorer la marketplace'}
+                {user?.role === 'SELLER' ? t('dash.recent.createListing') : t('dash.recent.exploreMarket')}
               </Link>
             </p>
           </div>
