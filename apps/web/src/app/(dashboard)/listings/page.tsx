@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { CATEGORY_INFO } from '@/lib/categoryInfo';
+import { useTranslation } from '@/lib/i18n/LanguageProvider';
 import Link from 'next/link';
 
 // Carte chargée côté client uniquement (Leaflet utilise window)
@@ -110,6 +111,7 @@ const emptyEditForm = {
 };
 
 export default function MyListingsPage() {
+  const { t } = useTranslation();
   const [listings, setListings] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
@@ -189,7 +191,7 @@ export default function MyListingsPage() {
       loadListings();
     } catch (err) {
       console.error(err);
-      setDeleteError(err instanceof Error ? err.message : 'Erreur lors de la suppression.');
+      setDeleteError(err instanceof Error ? err.message : t('myl.err.delete'));
       setIsDeleting(false);
     }
   };
@@ -242,7 +244,7 @@ export default function MyListingsPage() {
       loadListings();
     } catch (err: any) {
       console.error(err);
-      setEditError(err?.message || 'Erreur lors de la sauvegarde');
+      setEditError(err?.message || t('myl.err.save'));
       setIsSaving(false);
     }
   };
@@ -296,22 +298,22 @@ export default function MyListingsPage() {
   }, [listings, selectedCategory, searchRadius, priceMin, priceMax, statusFilter, getListingDistance, searchQuery, sortBy]);
 
   const tabs = [
-    { id: 'category', num: 1, label: 'Categorie' },
-    { id: 'location', num: 2, label: 'Localisation' },
-    { id: 'tarification', num: 3, label: 'Tarification' },
-    { id: 'publication', num: 4, label: 'Publication' },
+    { id: 'category', num: 1, label: t('myl.tab.category') },
+    { id: 'location', num: 2, label: t('myl.tab.location') },
+    { id: 'tarification', num: 3, label: t('myl.tab.pricing') },
+    { id: 'publication', num: 4, label: t('myl.tab.publication') },
   ] as const;
 
   const categoriesList = [
-    { id: 'ALL', label: 'Toutes', icon: '📋' },
-    { id: 'METALS', label: 'Metaux', icon: '⚙️' },
-    { id: 'PLASTICS', label: 'Plastiques', icon: '🧪' },
-    { id: 'BIOMASS', label: 'Biomasse', icon: '🌱' },
-    { id: 'WOOD', label: 'Bois', icon: '🌲' },
-    { id: 'TEXTILE', label: 'Textile', icon: '🧵' },
-    { id: 'OILS', label: 'Huiles', icon: '💧' },
-    { id: 'GLASS', label: 'Verre', icon: '🔮' },
-    { id: 'CHEMICAL', label: 'Chimique', icon: '⚗️' },
+    { id: 'ALL', label: t('myl.all'), icon: '📋' },
+    { id: 'METALS', label: t('cat.METALS'), icon: '⚙️' },
+    { id: 'PLASTICS', label: t('cat.PLASTICS'), icon: '🧪' },
+    { id: 'BIOMASS', label: t('cat.BIOMASS'), icon: '🌱' },
+    { id: 'WOOD', label: t('cat.WOOD'), icon: '🌲' },
+    { id: 'TEXTILE', label: t('cat.TEXTILE'), icon: '🧵' },
+    { id: 'OILS', label: t('cat.OILS'), icon: '💧' },
+    { id: 'GLASS', label: t('cat.GLASS'), icon: '🔮' },
+    { id: 'CHEMICAL', label: t('cat.CHEMICAL'), icon: '⚗️' },
   ];
 
   const radiusChoices: { value: number | null; label: string }[] = [
@@ -319,14 +321,14 @@ export default function MyListingsPage() {
     { value: 100, label: '100 km' },
     { value: 200, label: '200 km' },
     { value: 500, label: '500 km' },
-    { value: null, label: 'Tout' },
+    { value: null, label: t('myl.loc.allDist') },
   ];
 
   const pricePresets = [
     { min: 0, max: 100, label: '< 100 FCFA' },
     { min: 100, max: 300, label: '100 - 300 FCFA' },
     { min: 300, max: 1000, label: '300 - 1000 FCFA' },
-    { min: '', max: '', label: 'Tous les prix' },
+    { min: '', max: '', label: t('myl.price.allPrices') },
   ];
 
   const resetAll = () => {
@@ -509,13 +511,13 @@ export default function MyListingsPage() {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ fontSize: 22 }}>📄</span>
-              <h1 style={{ fontSize: 22, fontWeight: 700, color: '#f1f5f9' }}>Mes annonces</h1>
+              <h1 style={{ fontSize: 22, fontWeight: 700, color: '#f1f5f9' }}>{t('myl.title')}</h1>
             </div>
-            <p style={{ fontSize: 13, color: '#475569', marginTop: 4 }}>Gerez vos offres de matieres secondaires</p>
+            <p style={{ fontSize: 13, color: '#475569', marginTop: 4 }}>{t('myl.subtitle')}</p>
           </div>
           <Link href="/listings/new">
             <button className="btn-publier" style={{ padding: '13px 24px', fontSize: 14, boxShadow: '0 6px 20px rgba(16,185,129,0.2)' }}>
-              <span style={{ fontSize: 18, fontWeight: 700 }}>+</span> Nouvelle annonce
+              <span style={{ fontSize: 18, fontWeight: 700 }}>+</span> {t('myl.new')}
             </button>
           </Link>
         </div>
@@ -542,8 +544,8 @@ export default function MyListingsPage() {
 
             {/* 1. CATEGORY */}
             <div className={`tab-content ${activeTab === 'category' ? 'active' : ''}`}>
-              <h3 style={{ fontSize: 15, fontWeight: 600, color: '#e2e8f0', marginBottom: 6 }}>Categorie de matiere</h3>
-              <p style={{ fontSize: 13, color: '#475569', marginBottom: 22 }}>Filtrez vos annonces par type de matiere ou selectionnez une categorie pour voir les industries compatibles</p>
+              <h3 style={{ fontSize: 15, fontWeight: 600, color: '#e2e8f0', marginBottom: 6 }}>{t('myl.cat.title')}</h3>
+              <p style={{ fontSize: 13, color: '#475569', marginBottom: 22 }}>{t('myl.cat.desc')}</p>
               <div className="cat-grid">
                 {categoriesList.map((cat) => {
                   const info = CATEGORY_INFO[cat.id];
@@ -593,12 +595,12 @@ export default function MyListingsPage() {
                     <div className="cat-detail-body">
                       <div className="cat-detail-head">
                         <h4>{info.icon} {info.label}</h4>
-                        <span className="cat-detail-count">{count} annonce{count > 1 ? 's' : ''}</span>
+                        <span className="cat-detail-count">{count} {count > 1 ? t('myl.listings') : t('myl.listing')}</span>
                       </div>
                       <p className="cat-detail-desc">{info.description}</p>
-                      <div className="cat-detail-row"><span className="cat-detail-k">Exemples</span><span className="cat-chips">{info.examples.map((e) => <span key={e} className="cat-chip">{e}</span>)}</span></div>
-                      <div className="cat-detail-row"><span className="cat-detail-k">Prix marché</span><span className="cat-detail-price">💰 {info.priceRange}</span></div>
-                      <div className="cat-detail-row"><span className="cat-detail-k">Débouchés</span><span className="cat-chips">{info.industries.map((e) => <span key={e} className="cat-chip green">{e}</span>)}</span></div>
+                      <div className="cat-detail-row"><span className="cat-detail-k">{t('myl.detail.examples')}</span><span className="cat-chips">{info.examples.map((e) => <span key={e} className="cat-chip">{e}</span>)}</span></div>
+                      <div className="cat-detail-row"><span className="cat-detail-k">{t('myl.detail.price')}</span><span className="cat-detail-price">💰 {info.priceRange}</span></div>
+                      <div className="cat-detail-row"><span className="cat-detail-k">{t('myl.detail.outlets')}</span><span className="cat-chips">{info.industries.map((e) => <span key={e} className="cat-chip green">{e}</span>)}</span></div>
                     </div>
                   </motion.div>
                 );
@@ -607,11 +609,11 @@ export default function MyListingsPage() {
 
             {/* 2. LOCATION */}
             <div className={`tab-content ${activeTab === 'location' ? 'active' : ''}`}>
-              <h3 style={{ fontSize: 15, fontWeight: 600, color: '#e2e8f0', marginBottom: 6 }}>Localisation &amp; Proximite</h3>
-              <p style={{ fontSize: 13, color: '#475569', marginBottom: 22 }}>Trouvez les industries les plus proches interessees par votre type de matiere</p>
+              <h3 style={{ fontSize: 15, fontWeight: 600, color: '#e2e8f0', marginBottom: 6 }}>{t('myl.loc.title')}</h3>
+              <p style={{ fontSize: 13, color: '#475569', marginBottom: 22 }}>{t('myl.loc.desc')}</p>
               <div className="two-col">
                 <div>
-                  <label style={{ fontSize: 13, color: '#94a3b8', marginBottom: 12, display: 'block' }}>Rayon de recherche</label>
+                  <label style={{ fontSize: 13, color: '#94a3b8', marginBottom: 12, display: 'block' }}>{t('myl.loc.radius')}</label>
                   <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                     {radiusChoices.map((choice) => (
                       <div
@@ -626,10 +628,10 @@ export default function MyListingsPage() {
                   <div className="info-box" style={{ marginTop: 16, flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#94a3b8' }}>
                       <span>📍</span>
-                      <span>Votre position : <span style={{ color: '#e2e8f0', fontWeight: 500 }}>{userCity}, Cameroun</span></span>
+                      <span>{t('myl.loc.yourPos')} : <span style={{ color: '#e2e8f0', fontWeight: 500 }}>{userCity}, Cameroun</span></span>
                     </div>
                     <p style={{ fontSize: 12, color: '#64748b' }}>
-                      {filteredListings.length} annonce{filteredListings.length > 1 ? 's' : ''} dans un rayon de {searchRadius ? `${searchRadius} km` : 'toutes distances'}
+                      {filteredListings.length} {filteredListings.length > 1 ? t('myl.listings') : t('myl.listing')} {t('myl.within')} {searchRadius ? `${searchRadius} km` : t('myl.anyDist')}
                     </p>
                   </div>
                 </div>
@@ -643,20 +645,20 @@ export default function MyListingsPage() {
 
             {/* 3. TARIFICATION */}
             <div className={`tab-content ${activeTab === 'tarification' ? 'active' : ''}`}>
-              <h3 style={{ fontSize: 15, fontWeight: 600, color: '#e2e8f0', marginBottom: 6 }}>Tarification &amp; Negociation</h3>
-              <p style={{ fontSize: 13, color: '#475569', marginBottom: 22 }}>Filtrez par fourchette de prix et discutez directement avec les industries interessees</p>
+              <h3 style={{ fontSize: 15, fontWeight: 600, color: '#e2e8f0', marginBottom: 6 }}>{t('myl.price.title')}</h3>
+              <p style={{ fontSize: 13, color: '#475569', marginBottom: 22 }}>{t('myl.price.desc')}</p>
               <div className="two-col">
                 <div>
-                  <label style={{ fontSize: 13, color: '#94a3b8', marginBottom: 12, display: 'block' }}>Fourchette de prix (FCFA/kg)</label>
+                  <label style={{ fontSize: 13, color: '#94a3b8', marginBottom: 12, display: 'block' }}>{t('myl.price.range')}</label>
                   <div style={{ display: 'flex', gap: 16, alignItems: 'flex-end' }}>
                     <div style={{ flex: 1 }}>
-                      <label style={{ fontSize: 11, color: '#64748b', marginBottom: 4, display: 'block' }}>Min</label>
+                      <label style={{ fontSize: 11, color: '#64748b', marginBottom: 4, display: 'block' }}>{t('myl.price.min')}</label>
                       <input type="number" step="0.01" className="form-input" value={priceMin}
                         onChange={(e) => setPriceMin(e.target.value === '' ? '' : Number(e.target.value))} />
                     </div>
                     <span style={{ color: '#475569', paddingBottom: 12 }}>→</span>
                     <div style={{ flex: 1 }}>
-                      <label style={{ fontSize: 11, color: '#64748b', marginBottom: 4, display: 'block' }}>Max</label>
+                      <label style={{ fontSize: 11, color: '#64748b', marginBottom: 4, display: 'block' }}>{t('myl.price.max')}</label>
                       <input type="number" step="0.01" className="form-input" value={priceMax}
                         onChange={(e) => setPriceMax(e.target.value === '' ? '' : Number(e.target.value))} />
                     </div>
@@ -674,14 +676,14 @@ export default function MyListingsPage() {
                   </div>
                 </div>
                 <div style={{ background: '#111c30', borderRadius: 12, padding: 20, border: '1px solid #1a2540' }}>
-                  <h4 style={{ fontSize: 13, fontWeight: 600, marginBottom: 12, color: '#fbbf24', display: 'flex', alignItems: 'center', gap: 8 }}>💡 Negociation</h4>
+                  <h4 style={{ fontSize: 13, fontWeight: 600, marginBottom: 12, color: '#fbbf24', display: 'flex', alignItems: 'center', gap: 8 }}>💡 {t('myl.nego.title')}</h4>
                   <p style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.6 }}>
-                    Les prix affiches sont indicatifs. Apres publication, les industries interessees peuvent vous contacter via la <span style={{ color: '#34d399' }}>messagerie securisee</span> pour negocier le tarif, le volume et les conditions de transport.
+                    {t('myl.nego.text')}
                   </p>
                   <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-                    <span className="nego-tag" style={{ background: 'rgba(16,185,129,0.10)', color: '#34d399' }}>Negociable</span>
-                    <span className="nego-tag" style={{ background: 'rgba(59,130,246,0.10)', color: '#60a5fa' }}>Prix fixe</span>
-                    <span className="nego-tag" style={{ background: 'rgba(245,158,11,0.10)', color: '#fbbf24' }}>Sur devis</span>
+                    <span className="nego-tag" style={{ background: 'rgba(16,185,129,0.10)', color: '#34d399' }}>{t('myl.tag.negotiable')}</span>
+                    <span className="nego-tag" style={{ background: 'rgba(59,130,246,0.10)', color: '#60a5fa' }}>{t('myl.tag.fixed')}</span>
+                    <span className="nego-tag" style={{ background: 'rgba(245,158,11,0.10)', color: '#fbbf24' }}>{t('myl.tag.quote')}</span>
                   </div>
                 </div>
               </div>
@@ -689,23 +691,23 @@ export default function MyListingsPage() {
 
             {/* 4. PUBLICATION */}
             <div className={`tab-content ${activeTab === 'publication' ? 'active' : ''}`}>
-              <h3 style={{ fontSize: 15, fontWeight: 600, color: '#e2e8f0', marginBottom: 6 }}>Statut de publication</h3>
-              <p style={{ fontSize: 13, color: '#475569', marginBottom: 22 }}>Gerez la visibilite de vos annonces — publiez vos brouillons ou archivez les offres expirees</p>
+              <h3 style={{ fontSize: 15, fontWeight: 600, color: '#e2e8f0', marginBottom: 6 }}>{t('myl.pub.title')}</h3>
+              <p style={{ fontSize: 13, color: '#475569', marginBottom: 22 }}>{t('myl.pub.desc')}</p>
               <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
                 <div className={`status-btn ${statusFilter === 'ALL' ? 'active' : ''}`} onClick={() => setStatusFilter('ALL')}>
-                  Toutes <span className="count">{listings.length}</span>
+                  {t('myl.pub.all')} <span className="count">{listings.length}</span>
                 </div>
                 <div className={`status-btn ${statusFilter === 'DRAFT' ? 'active' : ''}`} onClick={() => setStatusFilter('DRAFT')}>
-                  Brouillons <span className="count">{draftCount}</span>
+                  {t('myl.pub.drafts')} <span className="count">{draftCount}</span>
                 </div>
                 <div className={`status-btn ${statusFilter === 'PUBLISHED' ? 'active' : ''}`} onClick={() => setStatusFilter('PUBLISHED')}>
-                  Publiees <span className="count">{pubCount}</span>
+                  {t('myl.pub.published')} <span className="count">{pubCount}</span>
                 </div>
               </div>
               <div className="info-box">
                 <span style={{ color: '#fbbf24', fontSize: 16 }}>⚡</span>
                 <p style={{ fontSize: 12, color: '#64748b' }}>
-                  Les annonces en <span style={{ color: '#fbbf24', fontWeight: 500 }}>DRAFT</span> ne sont pas visibles sur la marketplace. Publiez-les pour activer le matchmaking IA et recevoir des propositions.
+                  {t('myl.pub.info')}
                 </p>
               </div>
             </div>
@@ -724,28 +726,28 @@ export default function MyListingsPage() {
               <div className="stat-ico" style={{ background: 'rgba(16,185,129,0.12)' }}>📋</div>
               <div>
                 <div className="stat-val">{listings.length}</div>
-                <div className="stat-lbl">Annonces ({pubCount} publiées · {draftCount} brouillons)</div>
+                <div className="stat-lbl">{t('myl.stat.listings')} ({pubCount} {t('myl.stat.published')} · {draftCount} {t('myl.stat.drafts')})</div>
               </div>
             </div>
             <div className="stat-card">
               <div className="stat-ico" style={{ background: 'rgba(56,189,248,0.12)' }}>⚖️</div>
               <div>
                 <div className="stat-val">{formatVolume(totalVolumeKg)}</div>
-                <div className="stat-lbl">Volume total valorisable</div>
+                <div className="stat-lbl">{t('myl.stat.volume')}</div>
               </div>
             </div>
             <div className="stat-card">
               <div className="stat-ico" style={{ background: 'rgba(251,191,36,0.12)' }}>💰</div>
               <div>
                 <div className="stat-val">{formatFcfa(potentialRevenue)}</div>
-                <div className="stat-lbl">Revenu potentiel</div>
+                <div className="stat-lbl">{t('myl.stat.revenue')}</div>
               </div>
             </div>
             <div className="stat-card">
               <div className="stat-ico" style={{ background: 'rgba(167,139,250,0.12)' }}>⚡</div>
               <div>
                 <div className="stat-val">{totalMatches}</div>
-                <div className="stat-lbl">Matches générés</div>
+                <div className="stat-lbl">{t('myl.stat.matches')}</div>
               </div>
             </div>
           </div>
@@ -759,27 +761,27 @@ export default function MyListingsPage() {
               <input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Rechercher par titre, type, description…"
+                placeholder={t('myl.search')}
               />
             </div>
             <select className="sort-select" value={sortBy} onChange={(e) => setSortBy(e.target.value as typeof sortBy)}>
-              <option value="recent">Plus récentes</option>
-              <option value="price_desc">Prix décroissant</option>
-              <option value="price_asc">Prix croissant</option>
-              <option value="volume_desc">Volume décroissant</option>
-              <option value="matches_desc">Plus de matches</option>
+              <option value="recent">{t('myl.sort.recent')}</option>
+              <option value="price_desc">{t('myl.sort.priceDesc')}</option>
+              <option value="price_asc">{t('myl.sort.priceAsc')}</option>
+              <option value="volume_desc">{t('myl.sort.volumeDesc')}</option>
+              <option value="matches_desc">{t('myl.sort.matchesDesc')}</option>
             </select>
-            <button className="btn-export" onClick={exportCSV} title="Exporter en CSV">⬇ Exporter CSV</button>
+            <button className="btn-export" onClick={exportCSV} title={t('myl.export')}>⬇ {t('myl.export')}</button>
           </div>
         </div>
 
         {/* ── RESULTS COUNT ──────────────────────────────────── */}
         <div style={{ padding: '0 32px', marginBottom: 18, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <p style={{ fontSize: 13, color: '#475569' }}>
-            {filteredListings.length} annonce{filteredListings.length > 1 ? 's' : ''} trouvee{filteredListings.length > 1 ? 's' : ''}
+            {filteredListings.length} {filteredListings.length > 1 ? t('myl.listings') : t('myl.listing')} {t('myl.found')}
           </p>
           <button onClick={resetAll} style={{ fontSize: 12, color: '#475569', background: 'none', border: 'none', cursor: 'pointer' }}>
-            Reinitialiser les filtres
+            {t('myl.reset')}
           </button>
         </div>
 
@@ -794,8 +796,8 @@ export default function MyListingsPage() {
           ) : filteredListings.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '60px 0' }}>
               <div style={{ fontSize: 48, marginBottom: 12 }}>📭</div>
-              <h3 style={{ fontSize: 16, fontWeight: 600, color: '#94a3b8', marginBottom: 8 }}>Aucune annonce trouvee</h3>
-              <p style={{ fontSize: 13, color: '#475569' }}>Essayez de modifier vos filtres ou creez une nouvelle annonce.</p>
+              <h3 style={{ fontSize: 16, fontWeight: 600, color: '#94a3b8', marginBottom: 8 }}>{t('myl.empty')}</h3>
+              <p style={{ fontSize: 13, color: '#475569' }}>{t('myl.emptyDesc')}</p>
             </div>
           ) : (
             <div className="cards-grid">
@@ -816,7 +818,7 @@ export default function MyListingsPage() {
                   >
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                        <span className="badge" style={{ color: badge.color, background: badge.background }}>{listing.materialCategory}</span>
+                        <span className="badge" style={{ color: badge.color, background: badge.background }}>{t('cat.' + listing.materialCategory).startsWith('cat.') ? listing.materialCategory : t('cat.' + listing.materialCategory)}</span>
                         <span className="badge" style={isPublished
                           ? { color: '#34d399', background: 'rgba(16,185,129,0.15)' }
                           : { color: '#fbbf24', background: 'rgba(251,191,36,0.15)' }}>
@@ -828,8 +830,8 @@ export default function MyListingsPage() {
                       </h3>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 20px', fontSize: 13, color: '#94a3b8', marginBottom: 16 }}>
                         <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ color: '#34d399' }}>⚖</span> {formatVolume(listing.volumeKg)}</span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ color: '#60a5fa' }}>🔄</span> {listing.frequency}</span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ color: '#fbbf24' }}>💰</span> {listing.pricePerKg ? `${listing.pricePerKg} FCFA/kg` : 'À débattre'}</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ color: '#60a5fa' }}>🔄</span> {listing.frequency ? t('freq.' + listing.frequency) : ''}</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ color: '#fbbf24' }}>💰</span> {listing.pricePerKg ? `${listing.pricePerKg} FCFA/kg` : t('myl.toBargain')}</span>
                       </div>
                     </div>
                     <div>
@@ -846,16 +848,16 @@ export default function MyListingsPage() {
                       </div>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
                         {listing.status === 'DRAFT' && (
-                          <button className="btn-publier" style={{ flex: '1 1 45%' }} onClick={() => handlePublish(listing.id)}>✏️ Publier</button>
+                          <button className="btn-publier" style={{ flex: '1 1 45%' }} onClick={() => handlePublish(listing.id)}>✏️ {t('myl.publish')}</button>
                         )}
-                        <button className="btn-modifier" style={{ flex: '1 1 45%' }} onClick={() => openEdit(listing)}>✎ Modifier</button>
+                        <button className="btn-modifier" style={{ flex: '1 1 45%' }} onClick={() => openEdit(listing)}>✎ {t('myl.edit')}</button>
                         <Link href={`/marketplace/${listing.id}`} style={{ flex: '1 1 45%' }}>
-                          <button className="btn-voir">👁 Voir</button>
+                          <button className="btn-voir">👁 {t('myl.view')}</button>
                         </Link>
                         <button className="btn-dupliquer" style={{ flex: '1 1 45%' }} disabled={duplicatingId === listing.id} onClick={() => handleDuplicate(listing)}>
-                          {duplicatingId === listing.id ? '⏳ Copie…' : '⧉ Dupliquer'}
+                          {duplicatingId === listing.id ? '⏳ ' + t('myl.copying') : '⧉ ' + t('myl.duplicate')}
                         </button>
-                        <button className="btn-supprimer" style={{ flex: '1 1 45%' }} onClick={() => askDelete(listing)}>🗑 Supprimer</button>
+                        <button className="btn-supprimer" style={{ flex: '1 1 45%' }} onClick={() => askDelete(listing)}>🗑 {t('myl.delete')}</button>
                       </div>
                     </div>
                   </motion.div>
@@ -888,8 +890,8 @@ export default function MyListingsPage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <span style={{ fontSize: 20 }}>✎</span>
                   <div>
-                    <h3 style={{ fontSize: 17, fontWeight: 700, color: '#f1f5f9' }}>Modifier l&apos;annonce</h3>
-                    <p style={{ fontSize: 12, color: '#475569', marginTop: 2 }}>Mettez a jour les details de votre offre</p>
+                    <h3 style={{ fontSize: 17, fontWeight: 700, color: '#f1f5f9' }}>{t('myl.editTitle')}</h3>
+                    <p style={{ fontSize: 12, color: '#475569', marginTop: 2 }}>{t('myl.editSub')}</p>
                   </div>
                 </div>
                 <button className="modal-close" onClick={closeEdit} aria-label="Fermer">✕</button>
@@ -898,39 +900,39 @@ export default function MyListingsPage() {
               <div className="modal-body">
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                   <div style={{ gridColumn: '1 / -1' }}>
-                    <label className="field-label">Titre de l&apos;annonce</label>
-                    <input className="form-input" name="title" value={editForm.title} onChange={handleEditChange} placeholder="Ex: Marc de cafe — 5t/semaine" />
+                    <label className="field-label">{t('myl.f.title')}</label>
+                    <input className="form-input" name="title" value={editForm.title} onChange={handleEditChange} placeholder={t('myl.ph.title')} />
                   </div>
                   <div>
-                    <label className="field-label">Categorie</label>
+                    <label className="field-label">{t('myl.tab.category')}</label>
                     <select className="form-input" name="materialCategory" value={editForm.materialCategory} onChange={handleEditChange}>
-                      {EDIT_CATEGORIES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                      {EDIT_CATEGORIES.map(([v]) => <option key={v} value={v}>{t('cat.' + v)}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="field-label">Type precis</label>
-                    <input className="form-input" name="materialType" value={editForm.materialType} onChange={handleEditChange} placeholder="Ex: Marc de cafe usage" />
+                    <label className="field-label">{t('myl.f.type')}</label>
+                    <input className="form-input" name="materialType" value={editForm.materialType} onChange={handleEditChange} placeholder={t('myl.ph.type')} />
                   </div>
                   <div style={{ gridColumn: '1 / -1' }}>
-                    <label className="field-label">Description</label>
+                    <label className="field-label">{t('myl.f.desc')}</label>
                     <textarea className="form-input" name="description" value={editForm.description} onChange={handleEditChange} rows={3} style={{ resize: 'vertical' }} />
                   </div>
                   <div>
-                    <label className="field-label">Volume (kg)</label>
+                    <label className="field-label">{t('myl.f.volume')}</label>
                     <input className="form-input" type="number" min={1} name="volumeKg" value={editForm.volumeKg} onChange={handleEditChange} />
                   </div>
                   <div>
-                    <label className="field-label">Frequence</label>
+                    <label className="field-label">{t('myl.f.frequency')}</label>
                     <select className="form-input" name="frequency" value={editForm.frequency} onChange={handleEditChange}>
-                      {EDIT_FREQ.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                      {EDIT_FREQ.map(([v]) => <option key={v} value={v}>{t('freq.' + v)}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="field-label">Prix (FCFA / kg)</label>
+                    <label className="field-label">{t('myl.f.price')}</label>
                     <input className="form-input" type="number" step="0.01" min={0} name="pricePerKg" value={editForm.pricePerKg} onChange={handleEditChange} />
                   </div>
                   <div>
-                    <label className="field-label">📍 Localisation</label>
+                    <label className="field-label">📍 {t('myl.f.location')}</label>
                     <select className="form-input" name="city" value={editForm.city} onChange={handleEditChange}>
                       {CITY_NAMES.map((c) => <option key={c} value={c}>{c}</option>)}
                     </select>
@@ -944,9 +946,9 @@ export default function MyListingsPage() {
               </div>
 
               <div className="modal-footer">
-                <button className="btn-cancel" onClick={closeEdit} disabled={isSaving}>Annuler</button>
+                <button className="btn-cancel" onClick={closeEdit} disabled={isSaving}>{t('myl.cancel')}</button>
                 <button className="btn-save" onClick={handleEditSave} disabled={isSaving}>
-                  {isSaving ? '⏳ Enregistrement…' : '💾 Enregistrer'}
+                  {isSaving ? '⏳ ' + t('myl.saving') : '💾 ' + t('myl.save')}
                 </button>
               </div>
               </motion.div>
@@ -978,17 +980,17 @@ export default function MyListingsPage() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <span style={{ fontSize: 20 }}>🗑</span>
                     <div>
-                      <h3 style={{ fontSize: 17, fontWeight: 700, color: '#f1f5f9' }}>Supprimer l&apos;annonce&nbsp;?</h3>
-                      <p style={{ fontSize: 12, color: '#475569', marginTop: 2 }}>Action définitive</p>
+                      <h3 style={{ fontSize: 17, fontWeight: 700, color: '#f1f5f9' }}>{t('myl.delTitle')}</h3>
+                      <p style={{ fontSize: 12, color: '#475569', marginTop: 2 }}>{t('myl.delFinal')}</p>
                     </div>
                   </div>
                   <button className="modal-close" onClick={() => !isDeleting && setDeletingId(null)} aria-label="Fermer">✕</button>
                 </div>
                 <div className="modal-body">
                   <p style={{ fontSize: 14, color: '#cbd5e1', lineHeight: 1.6 }}>
-                    Vous êtes sur le point de supprimer{' '}
+                    {t('myl.delBody1')}{' '}
                     <span style={{ color: '#f1f5f9', fontWeight: 600 }}>« {deletingTitle} »</span>.
-                    Cette action est{' '}<span style={{ color: '#f87171', fontWeight: 600 }}>irréversible</span>{' '}et retire l&apos;annonce de la marketplace.
+                    {' '}{t('myl.delBody2')}{' '}<span style={{ color: '#f87171', fontWeight: 600 }}>{t('myl.irreversible')}</span>{' '}{t('myl.delBody3')}
                   </p>
                   {deleteError && (
                     <div style={{ marginTop: 16, padding: '10px 14px', borderRadius: 10, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.30)', color: '#f87171', fontSize: 13 }}>
@@ -997,9 +999,9 @@ export default function MyListingsPage() {
                   )}
                 </div>
                 <div className="modal-footer">
-                  <button className="btn-cancel" onClick={() => setDeletingId(null)} disabled={isDeleting}>Annuler</button>
+                  <button className="btn-cancel" onClick={() => setDeletingId(null)} disabled={isDeleting}>{t('myl.cancel')}</button>
                   <button className="btn-delete-confirm" onClick={handleDelete} disabled={isDeleting}>
-                    {isDeleting ? '⏳ Suppression…' : '🗑 Supprimer définitivement'}
+                    {isDeleting ? '⏳ ' + t('myl.deleting') : '🗑 ' + t('myl.delConfirm')}
                   </button>
                 </div>
               </motion.div>
