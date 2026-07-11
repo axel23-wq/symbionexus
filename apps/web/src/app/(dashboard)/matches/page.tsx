@@ -3,31 +3,56 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { useTranslation } from '@/lib/i18n/LanguageProvider';
 
 export default function MatchesPage() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [matches, setMatches] = useState<any[]>([]);
+  const [myListings, setMyListings] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isScanning, setIsScanning] = useState(false);
+  const [selectedListing, setSelectedListing] = useState('');
 
   const loadMatches = useCallback(async () => {
     try {
-      const result = await api.getMyMatches();
-      setMatches(result.data || []);
+      const [matchesRes, listingsRes] = await Promise.all([
+        api.getMyMatches().catch(() => ({ data: [] })),
+        user?.role === 'SELLER' ? api.getMyListings().catch(() => ({ data: [] })) : Promise.resolve({ data: [] })
+      ]);
+      setMatches(matchesRes.data || []);
+      setMyListings(listingsRes.data || []);
+      if (listingsRes.data && listingsRes.data.length > 0) {
+        setSelectedListing(listingsRes.data[0].id);
+      }
     } catch (err) {
       console.error('Matches load error:', err);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [user?.role]);
 
   useEffect(() => {
     loadMatches();
   }, [loadMatches]);
 
+  const runAiMatch = async () => {
+    if (!selectedListing) return;
+    setIsScanning(true);
+    try {
+      await api.computeAiMatch(selectedListing);
+      await loadMatches();
+    } catch (err) {
+      console.error('AI match error:', err);
+    } finally {
+      setIsScanning(false);
+    }
+  };
+
   const handleAccept = async (matchId: string) => {
+    // ... rest remains the same for handlers
     try {
       const result = await api.acceptMatch(matchId);
-      // If match is confirmed, auto-generate contract
       if (result.data.status === 'CONFIRMED') {
         await api.generateContract(matchId);
       }
@@ -47,14 +72,12 @@ export default function MatchesPage() {
   };
 
   const getStatusInfo = (status: string) => {
-    const map: Record<string, { label: string; badge: string }> = {
-      PROPOSED: { label: 'Proposé par l\'IA', badge: 'badge-info' },
-      ACCEPTED_SELLER: { label: 'Accepté par le vendeur', badge: 'badge-warning' },
-      ACCEPTED_BUYER: { label: 'Accepté par l\'acheteur', badge: 'badge-warning' },
-      CONFIRMED: { label: 'Confirmé ✅', badge: 'badge-success' },
-      REJECTED: { label: 'Rejeté', badge: 'badge-danger' },
+    const badgeMap: Record<string, string> = {
+      PROPOSED: 'badge-info', ACCEPTED_SELLER: 'badge-warning', ACCEPTED_BUYER: 'badge-warning',
+      CONFIRMED: 'badge-success', REJECTED: 'badge-danger',
     };
-    return map[status] || { label: status, badge: 'badge-info' };
+    const l = t('mtc.status.' + status);
+    return { label: l.startsWith('mtc.') ? status : l, badge: badgeMap[status] || 'badge-info' };
   };
 
   const ScoreRing = ({ score }: { score: number }) => {
@@ -91,12 +114,53 @@ export default function MatchesPage() {
     <div className="animate-fade-in">
       <div className="page-header">
         <div>
-          <h1 className="page-title">🤖 Matchmaking IA</h1>
+          <h1 className="page-title">🤖 {t('mtc.title')}</h1>
           <p className="page-subtitle">
-            Correspondances trouvées par notre algorithme d&apos;intelligence artificielle
+            {t('mtc.subtitle')}
           </p>
         </div>
       </div>
+
+      {/* AI Trigger Panel */}
+      {user?.role === 'SELLER' && myListings.length > 0 && (
+        <div className="neo-card" style={{ padding: '24px', marginBottom: '32px', background: 'linear-gradient(to right, rgba(13,148,136,0.05), rgba(168,85,247,0.05))' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+            <div>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '8px' }}>
+                🧠 {t('mtc.dl.title')}
+              </h3>
+              <p style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)', maxWidth: '500px' }}>
+                {t('mtc.dl.desc')}
+              </p>
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <select 
+                className="input-field" 
+                value={selectedListing} 
+                onChange={(e) => setSelectedListing(e.target.value)}
+                style={{ width: '250px' }}
+                disabled={isScanning}
+              >
+                {myListings.map(l => (
+                  <option key={l.id} value={l.id}>{l.title}</option>
+                ))}
+              </select>
+              <button 
+                className="btn-primary" 
+                onClick={runAiMatch} 
+                disabled={isScanning}
+                style={{
+                  background: isScanning ? 'var(--color-text-muted)' : 'linear-gradient(135deg, #a855f7, #3b82f6)',
+                  boxShadow: isScanning ? 'none' : '0 0 20px rgba(168, 85, 247, 0.4)'
+                }}
+              >
+                {isScanning ? t('mtc.scanning') + ' 🔄' : t('mtc.scan') + ' 🚀'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {isLoading ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -108,12 +172,10 @@ export default function MatchesPage() {
         <div style={{ textAlign: 'center', padding: '80px 24px', color: 'var(--color-text-muted)' }}>
           <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🤖</div>
           <h3 style={{ fontSize: '1.2rem', marginBottom: '8px', color: 'var(--color-text-secondary)' }}>
-            Aucun match en cours
+            {t('mtc.empty')}
           </h3>
           <p>
-            {user?.role === 'SELLER'
-              ? 'Publiez une annonce pour que l\'IA trouve des acheteurs compatibles.'
-              : 'L\'IA vous proposera des correspondances dès qu\'une matière compatible sera disponible.'}
+            {user?.role === 'SELLER' ? t('mtc.emptySeller') : t('mtc.emptyBuyer')}
           </p>
         </div>
       ) : (
@@ -178,13 +240,30 @@ export default function MatchesPage() {
                     }}>
                       {match.scoreBreakdown && (
                         <>
-                          <ScoreBar label="Matière" value={match.scoreBreakdown.materialScore} color="#10b981" />
-                          <ScoreBar label="Distance" value={match.scoreBreakdown.distanceScore} color="#3b82f6" />
-                          <ScoreBar label="Volume" value={match.scoreBreakdown.volumeScore} color="#f59e0b" />
-                          <ScoreBar label="Confiance" value={match.scoreBreakdown.trustScore} color="#8b5cf6" />
+                          <ScoreBar label={t('mtc.score.material')} value={match.scoreBreakdown.materialScore} color="#10b981" />
+                          <ScoreBar label={t('mtc.score.distance')} value={match.scoreBreakdown.distanceScore} color="#3b82f6" />
+                          <ScoreBar label={t('mtc.score.volume')} value={match.scoreBreakdown.volumeScore} color="#f59e0b" />
+                          <ScoreBar label={t('mtc.score.trust')} value={match.scoreBreakdown.trustScore} color="#8b5cf6" />
                         </>
                       )}
                     </div>
+                    
+                    {match.scoreBreakdown?.aiInsight && (
+                      <div style={{
+                        marginTop: '16px',
+                        padding: '12px 16px',
+                        background: 'rgba(168, 85, 247, 0.08)',
+                        borderRadius: 'var(--radius-md)',
+                        borderLeft: '4px solid #a855f7',
+                        fontSize: '0.85rem',
+                        color: 'var(--color-text-primary)'
+                      }}>
+                        <div style={{ fontWeight: 600, color: '#a855f7', marginBottom: '4px', fontSize: '0.8rem' }}>
+                          ✨ AI Insight
+                        </div>
+                        {match.scoreBreakdown.aiInsight}
+                      </div>
+                    )}
                   </div>
 
                   {/* Actions */}
@@ -195,7 +274,7 @@ export default function MatchesPage() {
                         style={{ padding: '10px 20px', fontSize: '0.85rem' }}
                         onClick={() => handleAccept(match.id)}
                       >
-                        ✅ Accepter
+                        ✅ {t('mtc.accept')}
                       </button>
                     )}
                     {isActionable && (
@@ -204,12 +283,12 @@ export default function MatchesPage() {
                         style={{ padding: '10px 20px', fontSize: '0.85rem' }}
                         onClick={() => handleReject(match.id)}
                       >
-                        ❌ Rejeter
+                        ❌ {t('mtc.reject')}
                       </button>
                     )}
                     {match.status === 'CONFIRMED' && (
                       <span className="badge badge-success" style={{ padding: '10px 16px' }}>
-                        🎉 Confirmé
+                        🎉 {t('mtc.status.CONFIRMED')}
                       </span>
                     )}
                   </div>

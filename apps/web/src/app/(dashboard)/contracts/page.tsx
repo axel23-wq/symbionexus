@@ -4,9 +4,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { waLink, CONTACT_PHONE_INTL } from '@/lib/contact';
+import { useTranslation } from '@/lib/i18n/LanguageProvider';
 
 export default function ContractsPage() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [contracts, setContracts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -43,23 +45,25 @@ export default function ContractsPage() {
   };
 
   const getStatusBadge = (status: string) => {
-    const map: Record<string, { class: string; label: string }> = {
-      DRAFT: { class: 'badge-info', label: '📝 Brouillon' },
-      PENDING_SIGNATURES: { class: 'badge-warning', label: '✍️ En attente de signatures' },
-      SIGNED: { class: 'badge-success', label: '✅ Signé' },
-      IN_PROGRESS: { class: 'badge-primary', label: '🚛 En cours' },
-      COMPLETED: { class: 'badge-success', label: '🎉 Complété' },
-      CANCELLED: { class: 'badge-danger', label: '❌ Annulé' },
+    const meta: Record<string, { class: string; icon: string }> = {
+      DRAFT: { class: 'badge-info', icon: '📝' },
+      PENDING_SIGNATURES: { class: 'badge-warning', icon: '✍️' },
+      SIGNED: { class: 'badge-success', icon: '✅' },
+      IN_PROGRESS: { class: 'badge-primary', icon: '🚛' },
+      COMPLETED: { class: 'badge-success', icon: '🎉' },
+      CANCELLED: { class: 'badge-danger', icon: '❌' },
     };
-    return map[status] || { class: 'badge-info', label: status };
+    const m = meta[status];
+    if (!m) return { class: 'badge-info', label: status };
+    return { class: m.class, label: `${m.icon} ${t('ctr.status.' + status)}` };
   };
 
   return (
     <div className="animate-fade-in">
       <div className="page-header">
         <div>
-          <h1 className="page-title">📝 Contrats</h1>
-          <p className="page-subtitle">Gestion de vos contrats de matières secondaires</p>
+          <h1 className="page-title">📝 {t('ctr.title')}</h1>
+          <p className="page-subtitle">{t('ctr.subtitle')}</p>
         </div>
       </div>
 
@@ -73,9 +77,9 @@ export default function ContractsPage() {
         <div style={{ textAlign: 'center', padding: '80px', color: 'var(--color-text-muted)' }}>
           <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📝</div>
           <h3 style={{ fontSize: '1.2rem', marginBottom: '8px', color: 'var(--color-text-secondary)' }}>
-            Aucun contrat
+            {t('ctr.empty')}
           </h3>
-          <p>Les contrats sont générés automatiquement lorsqu&apos;un match est confirmé.</p>
+          <p>{t('ctr.emptyDesc')}</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -95,7 +99,7 @@ export default function ContractsPage() {
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
                       <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.05rem', fontWeight: 700 }}>
-                        {contract.match?.listing?.title || 'Contrat'}
+                        {contract.match?.listing?.title || t('ctr.contract')}
                       </h3>
                       <span className={`badge ${statusInfo.class}`}>{statusInfo.label}</span>
                     </div>
@@ -108,7 +112,7 @@ export default function ContractsPage() {
 
                     <div style={{ display: 'flex', gap: '24px', fontSize: '0.85rem' }}>
                       <div>
-                        <span style={{ color: 'var(--color-text-muted)' }}>Volume : </span>
+                        <span style={{ color: 'var(--color-text-muted)' }}>{t('ctr.volume')} : </span>
                         <span style={{ fontWeight: 600 }}>
                           {contract.volumeEngagedKg >= 1000
                             ? `${(contract.volumeEngagedKg / 1000).toFixed(1)}t`
@@ -116,26 +120,26 @@ export default function ContractsPage() {
                         </span>
                       </div>
                       <div>
-                        <span style={{ color: 'var(--color-text-muted)' }}>Prix/kg : </span>
+                        <span style={{ color: 'var(--color-text-muted)' }}>{t('ctr.pricePerKg')} : </span>
                         <span style={{ fontWeight: 600, color: '#f59e0b' }}>{contract.pricePerKg} FCFA</span>
                       </div>
                       <div>
-                        <span style={{ color: 'var(--color-text-muted)' }}>Total : </span>
+                        <span style={{ color: 'var(--color-text-muted)' }}>{t('ctr.total')} : </span>
                         <span style={{ fontWeight: 700, color: 'var(--color-primary-400)' }}>{contract.totalPrice?.toLocaleString('fr-FR')} FCFA</span>
                       </div>
                       <div>
-                        <span style={{ color: 'var(--color-text-muted)' }}>Durée : </span>
-                        <span style={{ fontWeight: 600 }}>{contract.durationMonths} mois</span>
+                        <span style={{ color: 'var(--color-text-muted)' }}>{t('ctr.duration')} : </span>
+                        <span style={{ fontWeight: 600 }}>{contract.durationMonths} {t('ctr.months')}</span>
                       </div>
                     </div>
 
                     {/* Signature status */}
                     <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
                       <span className={`badge ${contract.sellerSigned ? 'badge-success' : 'badge-warning'}`}>
-                        Vendeur : {contract.sellerSigned ? '✅ Signé' : '⏳ En attente'}
+                        {t('ctr.seller')} : {contract.sellerSigned ? '✅ ' + t('ctr.signed') : '⏳ ' + t('ctr.pending')}
                       </span>
                       <span className={`badge ${contract.buyerSigned ? 'badge-success' : 'badge-warning'}`}>
-                        Acheteur : {contract.buyerSigned ? '✅ Signé' : '⏳ En attente'}
+                        {t('ctr.buyer')} : {contract.buyerSigned ? '✅ ' + t('ctr.signed') : '⏳ ' + t('ctr.pending')}
                       </span>
                     </div>
                   </div>
@@ -148,7 +152,7 @@ export default function ContractsPage() {
                         disabled={busyId === contract.id}
                         onClick={() => handleSign(contract.id)}
                       >
-                        {busyId === contract.id && busyAction === 'sign' ? '⏳ Signature…' : '✍️ Signer'}
+                        {busyId === contract.id && busyAction === 'sign' ? '⏳ ' + t('ctr.signing') : '✍️ ' + t('ctr.sign')}
                       </button>
                     )}
                     {contract.status === 'SIGNED' && (
@@ -158,7 +162,7 @@ export default function ContractsPage() {
                         disabled={busyId === contract.id}
                         onClick={() => handleCreatePassport(contract.id)}
                       >
-                        {busyId === contract.id && busyAction === 'passport' ? '⏳ Création…' : '📦 Créer passeport'}
+                        {busyId === contract.id && busyAction === 'passport' ? '⏳ ' + t('ctr.creating') : '📦 ' + t('ctr.createPassport')}
                       </button>
                     )}
                     {(contract.status === 'SIGNED' || contract.status === 'IN_PROGRESS' || contract.status === 'COMPLETED') && (
@@ -168,7 +172,7 @@ export default function ContractsPage() {
                         rel="noopener noreferrer"
                         style={{ textDecoration: 'none', textAlign: 'center', padding: '10px 20px', fontSize: '0.85rem', fontWeight: 600, borderRadius: 12, background: 'linear-gradient(135deg,#f97316,#ea580c)', color: '#fff', whiteSpace: 'nowrap' }}
                       >
-                        💳 Payer (Mobile Money)
+                        💳 {t('ctr.pay')}
                       </a>
                     )}
                   </div>
