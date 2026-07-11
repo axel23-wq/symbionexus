@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import { api } from '@/lib/api';
 import { useRouter } from 'next/navigation';
+import { useTranslation } from '@/lib/i18n/LanguageProvider';
 
 // Villes disponibles avec leurs coordonnées (alignées sur la page Mes annonces)
 const CITIES: Record<string, { lat: number; lon: number }> = {
@@ -73,6 +74,7 @@ const MAX_PHOTO_BYTES = 5 * 1024 * 1024; // 5 Mo
 
 export default function NewListingPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -109,7 +111,7 @@ export default function NewListingPage() {
   };
 
   const addTag = () => {
-    const name = window.prompt('Nom du tag :')?.trim();
+    const name = window.prompt(t('listing.tagPrompt'))?.trim();
     if (!name) return;
     if (!allTags.includes(name)) setAllTags((prev) => [...prev, name]);
     setTags((prev) => (prev.includes(name) ? prev : [...prev, name]));
@@ -126,7 +128,7 @@ export default function NewListingPage() {
     for (const file of list) {
       if (!file.type.startsWith('image/')) continue;
       if (file.size > MAX_PHOTO_BYTES) {
-        setError(`« ${file.name} » dépasse 5 Mo et a été ignorée.`);
+        setError(`« ${file.name} » ${t('listing.err.photoBig')}`);
         continue;
       }
       const reader = new FileReader();
@@ -144,15 +146,15 @@ export default function NewListingPage() {
     e.preventDefault();
     setError('');
 
-    if (!title.trim()) { setError("Le titre est obligatoire."); return; }
-    if (!materialType.trim()) { setError("Le type précis est obligatoire."); return; }
-    if (!description.trim()) { setError("La description est obligatoire."); return; }
+    if (!title.trim()) { setError(t('listing.err.title')); return; }
+    if (!materialType.trim()) { setError(t('listing.err.type')); return; }
+    if (!description.trim()) { setError(t('listing.err.desc')); return; }
 
     const volume = Number(volumeKg);
-    if (!Number.isFinite(volume) || volume < 1) { setError('Le volume doit être un nombre ≥ 1.'); return; }
+    if (!Number.isFinite(volume) || volume < 1) { setError(t('listing.err.volume')); return; }
 
     const price = Number(String(pricePerKg).replace(',', '.'));
-    if (!Number.isFinite(price) || price < 0) { setError('Le prix doit être un nombre positif.'); return; }
+    if (!Number.isFinite(price) || price < 0) { setError(t('listing.err.price')); return; }
 
     setIsLoading(true);
     try {
@@ -177,7 +179,7 @@ export default function NewListingPage() {
       router.push('/listings');
     } catch (err) {
       console.error(err);
-      const message = err instanceof Error ? err.message : "Erreur lors de la création de l'annonce.";
+      const message = err instanceof Error ? err.message : t('listing.err.generic');
       setError(message);
       setIsLoading(false);
     }
@@ -227,9 +229,9 @@ export default function NewListingPage() {
         <div style={{ marginBottom: 28 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
             <span style={{ color: '#10b981', fontSize: 24, fontWeight: 700 }}>+</span>
-            <h1 style={{ fontSize: 20, fontWeight: 700, color: '#f1f5f9' }}>Nouvelle annonce</h1>
+            <h1 style={{ fontSize: 20, fontWeight: 700, color: '#f1f5f9' }}>{t('listing.new.title')}</h1>
           </div>
-          <p style={{ fontSize: 13, color: '#64748b' }}>Détaillez la matière que vous souhaitez valoriser</p>
+          <p style={{ fontSize: 13, color: '#64748b' }}>{t('listing.new.subtitle')}</p>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -238,59 +240,59 @@ export default function NewListingPage() {
 
             {/* TITRE */}
             <div style={{ marginBottom: 24 }}>
-              <label className="na-form-label">Titre de l&apos;annonce</label>
-              <input className="na-input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ex: Marc de café – 5 tonnes" />
+              <label className="na-form-label">{t('listing.f.title')}</label>
+              <input className="na-input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t('listing.ph.title')} />
             </div>
 
             {/* CATÉGORIE + TYPE */}
             <div className="na-two" style={{ marginBottom: 24 }}>
               <div>
-                <label className="na-form-label">Catégorie</label>
+                <label className="na-form-label">{t('listing.f.category')}</label>
                 <select className="na-input" value={materialCategory} onChange={(e) => setMaterialCategory(e.target.value)}>
-                  {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+                  {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{t('cat.' + c.value)}</option>)}
                 </select>
               </div>
               <div>
-                <label className="na-form-label">Type précis</label>
-                <input className="na-input" value={materialType} onChange={(e) => setMaterialType(e.target.value)} placeholder="Ex: Marc de café usagé" />
+                <label className="na-form-label">{t('listing.f.type')}</label>
+                <input className="na-input" value={materialType} onChange={(e) => setMaterialType(e.target.value)} placeholder={t('listing.ph.type')} />
               </div>
             </div>
 
             {/* DESCRIPTION */}
             <div style={{ marginBottom: 24 }}>
-              <label className="na-form-label">Description</label>
-              <textarea className="na-input" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Détaillez la pureté, le conditionnement, l'origine..." />
+              <label className="na-form-label">{t('listing.f.description')}</label>
+              <textarea className="na-input" value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t('listing.ph.description')} />
             </div>
 
             {/* VOLUME + FRÉQUENCE */}
             <div className="na-two" style={{ marginBottom: 24 }}>
               <div>
-                <label className="na-form-label">Volume (kg)</label>
+                <label className="na-form-label">{t('listing.f.volume')}</label>
                 <input className="na-input" type="number" min={1} value={volumeKg} onChange={(e) => setVolumeKg(e.target.value)} />
               </div>
               <div>
-                <label className="na-form-label">Fréquence de disponibilité</label>
+                <label className="na-form-label">{t('listing.f.frequency')}</label>
                 <select className="na-input" value={frequency} onChange={(e) => setFrequency(e.target.value)}>
-                  {FREQUENCIES.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
+                  {FREQUENCIES.map((f) => <option key={f.value} value={f.value}>{t('freq.' + f.value)}</option>)}
                 </select>
               </div>
             </div>
 
             {/* PRIX */}
             <div style={{ marginBottom: 32 }}>
-              <label className="na-form-label">Prix souhaité (FCFA / kg)</label>
+              <label className="na-form-label">{t('listing.f.price')}</label>
               <div style={{ maxWidth: '48%' }}>
                 <input className="na-input" value={pricePerKg} onChange={(e) => setPricePerKg(e.target.value)} placeholder="50" />
               </div>
               {priceHint && (
                 <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', fontSize: 12, color: '#94a3b8' }}>
-                  <span>💡 Estimation marché&nbsp;: <b style={{ color: '#34d399' }}>{priceHint.low} – {priceHint.high} FCFA/kg</b></span>
+                  <span>💡 {t('listing.priceEst')}&nbsp;: <b style={{ color: '#34d399' }}>{priceHint.low} – {priceHint.high} FCFA/kg</b></span>
                   <button
                     type="button"
                     onClick={() => setPricePerKg(String(priceHint.mid))}
                     style={{ background: 'rgba(16,185,129,0.10)', color: '#34d399', border: '1.5px solid rgba(16,185,129,0.4)', borderRadius: 8, padding: '5px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
                   >
-                    Appliquer {priceHint.mid} FCFA
+                    {t('listing.apply')} {priceHint.mid} FCFA
                   </button>
                 </div>
               )}
@@ -298,18 +300,18 @@ export default function NewListingPage() {
 
             {/* PROFIL CHIMIQUE / TAGS */}
             <div style={{ marginBottom: 32 }}>
-              <label className="na-form-label" style={{ marginBottom: 14 }}>Profil chimique / Composition</label>
+              <label className="na-form-label" style={{ marginBottom: 14 }}>{t('listing.f.chem')}</label>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
                 {allTags.map((tag) => (
-                  <button type="button" key={tag} className={`na-tag ${tags.includes(tag) ? 'active' : ''}`} onClick={() => toggleTag(tag)}>{tag}</button>
+                  <button type="button" key={tag} className={`na-tag ${tags.includes(tag) ? 'active' : ''}`} onClick={() => toggleTag(tag)}>{t('tag.' + tag).startsWith('tag.') ? tag : t('tag.' + tag)}</button>
                 ))}
-                <button type="button" className="na-tag-add" onClick={addTag}>+ Ajouter</button>
+                <button type="button" className="na-tag-add" onClick={addTag}>{t('listing.addTag')}</button>
               </div>
             </div>
 
             {/* PHOTOS */}
             <div style={{ marginBottom: 32 }}>
-              <label className="na-form-label" style={{ marginBottom: 14 }}>Photos de la matière</label>
+              <label className="na-form-label" style={{ marginBottom: 14 }}>{t('listing.f.photos')}</label>
               <div
                 className={`na-drop ${dragActive ? 'drag' : ''}`}
                 onClick={() => fileInputRef.current?.click()}
@@ -324,8 +326,8 @@ export default function NewListingPage() {
                     <circle cx="27" cy="14" r="2" fill="#64748b" />
                   </svg>
                 </div>
-                <p style={{ fontSize: 14, color: '#94a3b8', marginBottom: 4 }}>Glissez vos photos ici ou cliquez pour parcourir</p>
-                <p style={{ fontSize: 12, color: '#475569' }}>JPG, PNG — Max. 5 Mo par fichier — Jusqu&apos;à 6 photos</p>
+                <p style={{ fontSize: 14, color: '#94a3b8', marginBottom: 4 }}>{t('listing.dropHint')}</p>
+                <p style={{ fontSize: 12, color: '#475569' }}>{t('listing.dropSub')}</p>
                 <input ref={fileInputRef} type="file" style={{ display: 'none' }} multiple accept="image/*" onChange={(e) => handleFiles(e.target.files)} />
               </div>
 
@@ -339,17 +341,17 @@ export default function NewListingPage() {
                   ))}
                 </div>
               )}
-              <p style={{ fontSize: 12, color: '#475569', marginTop: 10 }}>{photos.length} / {MAX_PHOTOS} photos</p>
+              <p style={{ fontSize: 12, color: '#475569', marginTop: 10 }}>{photos.length} / {MAX_PHOTOS} {t('listing.photos')}</p>
             </div>
 
             {/* LOCALISATION */}
             <div style={{ marginBottom: 32 }}>
-              <label className="na-form-label" style={{ marginBottom: 14 }}>Localisation du site</label>
+              <label className="na-form-label" style={{ marginBottom: 14 }}>{t('listing.f.location')}</label>
               <div className="na-two" style={{ marginBottom: 16 }}>
                 <select className="na-input" value={city} onChange={(e) => setCity(e.target.value)}>
                   {Object.keys(CITIES).map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
-                <input className="na-input" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} placeholder="Boîte postale (BP)" />
+                <input className="na-input" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} placeholder={t('listing.ph.postal')} />
               </div>
               <div className="na-map">
                 <div className="na-map-grid" />
@@ -362,7 +364,7 @@ export default function NewListingPage() {
 
             {/* CERTIFICATIONS */}
             <div>
-              <label className="na-form-label" style={{ marginBottom: 14 }}>Certifications &amp; Conformité</label>
+              <label className="na-form-label" style={{ marginBottom: 14 }}>{t('listing.f.certs')}</label>
               <div className="na-two" style={{ gap: 14 }}>
                 {CERTIFICATIONS.map((cert) => {
                   const checked = certifications.includes(cert.id);
@@ -370,8 +372,8 @@ export default function NewListingPage() {
                     <div className="na-cert" key={cert.id} onClick={() => toggleCert(cert.id)}>
                       <div className={`na-check ${checked ? 'checked' : ''}`} />
                       <div>
-                        <div style={{ fontSize: 14, fontWeight: 600, color: '#e2e8f0' }}>{cert.title}</div>
-                        <div style={{ fontSize: 12, color: '#475569', marginTop: 2 }}>{cert.desc}</div>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: '#e2e8f0' }}>{t('cert.' + cert.id + '.title')}</div>
+                        <div style={{ fontSize: 12, color: '#475569', marginTop: 2 }}>{t('cert.' + cert.id + '.desc')}</div>
                       </div>
                     </div>
                   );
@@ -389,9 +391,9 @@ export default function NewListingPage() {
 
           {/* ACTIONS */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginTop: 32, paddingBottom: 48 }}>
-            <button type="button" className="na-btn-cancel" onClick={() => router.push('/listings')}>Annuler</button>
+            <button type="button" className="na-btn-cancel" onClick={() => router.push('/listings')}>{t('listing.cancel')}</button>
             <button type="submit" className="na-btn-create" disabled={isLoading}>
-              {isLoading ? '⏳ Création…' : "Créer l'annonce"}
+              {isLoading ? '⏳ ' + t('listing.creating') : t('listing.create')}
             </button>
           </div>
         </form>
