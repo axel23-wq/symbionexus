@@ -3,30 +3,25 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import Link from 'next/link';
+import { useTranslation } from '@/lib/i18n/LanguageProvider';
 
+// key '' = Toutes ; libellés résolus via t('cat.KEY') / t('mkt.all')
 const CATEGORIES = [
-  { key: '', label: 'Toutes', icon: '🔄' },
-  { key: 'METALS', label: 'Métaux', icon: '⚙️', color: '#f59e0b' },
-  { key: 'PLASTICS', label: 'Plastiques', icon: '♻️', color: '#3b82f6' },
-  { key: 'BIOMASS', label: 'Biomasse', icon: '🌿', color: '#10b981' },
-  { key: 'CHEMICALS', label: 'Chimiques', icon: '🧪', color: '#ef4444' },
-  { key: 'TEXTILE', label: 'Textile', icon: '🧵', color: '#8b5cf6' },
-  { key: 'CONSTRUCTION', label: 'BTP', icon: '🏗️', color: '#78716c' },
-  { key: 'GLASS', label: 'Verre', icon: '🔬', color: '#06b6d4' },
-  { key: 'PAPER', label: 'Papier', icon: '📄', color: '#a3e635' },
-  { key: 'ELECTRONIC', label: 'DEEE', icon: '💻', color: '#ec4899' },
+  { key: '', icon: '🔄' },
+  { key: 'METALS', icon: '⚙️', color: '#f59e0b' },
+  { key: 'PLASTICS', icon: '♻️', color: '#3b82f6' },
+  { key: 'BIOMASS', icon: '🌿', color: '#10b981' },
+  { key: 'CHEMICALS', icon: '🧪', color: '#ef4444' },
+  { key: 'TEXTILE', icon: '🧵', color: '#8b5cf6' },
+  { key: 'CONSTRUCTION', icon: '🏗️', color: '#78716c' },
+  { key: 'GLASS', icon: '🔬', color: '#06b6d4' },
+  { key: 'PAPER', icon: '📄', color: '#a3e635' },
+  { key: 'ELECTRONIC', icon: '💻', color: '#ec4899' },
 ];
 
-const FREQUENCY_MAP: Record<string, string> = {
-  DAILY: 'Quotidien',
-  WEEKLY: 'Hebdomadaire',
-  BIWEEKLY: 'Bimensuel',
-  MONTHLY: 'Mensuel',
-  QUARTERLY: 'Trimestriel',
-  ON_DEMAND: 'À la demande',
-};
-
 export default function MarketplacePage() {
+  const { t } = useTranslation();
+  const catLabel = (key: string) => (key ? t('cat.' + key) : t('mkt.all'));
   const [listings, setListings] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('');
@@ -69,7 +64,7 @@ export default function MarketplacePage() {
         <div>
           <h1 className="page-title">🏪 Marketplace</h1>
           <p className="page-subtitle">
-            Catalogue des matières secondaires disponibles
+            {t('mkt.subtitle')}
           </p>
         </div>
       </div>
@@ -80,7 +75,7 @@ export default function MarketplacePage() {
           <span style={{ fontSize: '1.1rem' }}>🔍</span>
           <input
             type="text"
-            placeholder="Rechercher : marc de café, copeaux aluminium, chutes plastique..."
+            placeholder={t('mkt.searchPh')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -89,7 +84,7 @@ export default function MarketplacePage() {
             className="btn-primary"
             style={{ padding: '6px 16px', fontSize: '0.8rem' }}
           >
-            Rechercher
+            {t('mkt.search')}
           </button>
         </div>
       </form>
@@ -114,7 +109,7 @@ export default function MarketplacePage() {
               flexShrink: 0,
             }}
           >
-            {cat.icon} {cat.label}
+            {cat.icon} {catLabel(cat.key)}
           </button>
         ))}
       </div>
@@ -138,9 +133,9 @@ export default function MarketplacePage() {
         }}>
           <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🔍</div>
           <h3 style={{ fontSize: '1.2rem', marginBottom: '8px', color: 'var(--color-text-secondary)' }}>
-            Aucune annonce trouvée
+            {t('mkt.emptyTitle')}
           </h3>
-          <p>Essayez une autre catégorie ou un terme de recherche différent.</p>
+          <p>{t('mkt.emptySub')}</p>
         </div>
       ) : (
         <div style={{
@@ -181,7 +176,7 @@ export default function MarketplacePage() {
                     }}
                   >
                     {CATEGORIES.find((c) => c.key === listing.materialCategory)?.icon}{' '}
-                    {CATEGORIES.find((c) => c.key === listing.materialCategory)?.label}
+                    {catLabel(listing.materialCategory)}
                   </span>
                   <span className="badge badge-success">
                     {listing.status}
@@ -225,7 +220,7 @@ export default function MarketplacePage() {
                 }}>
                   <div>
                     <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      Volume
+                      {t('mkt.volume')}
                     </div>
                     <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--color-primary-400)' }}>
                       {listing.volumeKg >= 1000 ? `${(listing.volumeKg / 1000).toFixed(1)}t` : `${listing.volumeKg}kg`}
@@ -233,23 +228,23 @@ export default function MarketplacePage() {
                   </div>
                   <div>
                     <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      Fréquence
+                      {t('mkt.frequency')}
                     </div>
                     <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>
-                      {FREQUENCY_MAP[listing.frequency] || listing.frequency}
+                      {listing.frequency ? t('freq.' + listing.frequency) : ''}
                     </div>
                   </div>
                   <div>
                     <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      Prix/kg
+                      {t('mkt.pricePerKg')}
                     </div>
                     <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#f59e0b' }}>
-                      {listing.pricePerKg ? `${listing.pricePerKg} FCFA` : 'À négocier'}
+                      {listing.pricePerKg ? `${listing.pricePerKg} FCFA` : t('mkt.negotiable')}
                     </div>
                   </div>
                   <div>
                     <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      Localisation
+                      {t('mkt.location')}
                     </div>
                     <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>
                       📍 {listing.company?.companyCity || 'Cameroun'}

@@ -215,5 +215,18 @@
   "cert.FDS.title": "SDS available",
   "cert.FDS.desc": "Safety data sheet",
   "cert.LABO.title": "Lab analysis",
-  "cert.LABO.desc": "Lab reports attached"
+  "cert.LABO.desc": "Lab reports attached",
+  "mkt.subtitle": "Catalog of available secondary materials",
+  "mkt.searchPh": "Search: coffee grounds, aluminum shavings, plastic offcuts...",
+  "mkt.search": "Search",
+  "mkt.all": "All",
+  "mkt.emptyTitle": "No listing found",
+  "mkt.emptySub": "Try another category or a different search term.",
+  "mkt.volume": "Volume",
+  "mkt.frequency": "Frequency",
+  "mkt.pricePerKg": "Price/kg",
+  "mkt.location": "Location",
+  "mkt.negotiable": "Negotiable",
+  "freq.BIWEEKLY": "Biweekly",
+  "freq.QUARTERLY": "Quarterly"
 }

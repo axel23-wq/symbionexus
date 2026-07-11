@@ -215,5 +215,18 @@
   "cert.FDS.title": "FDS disponible",
   "cert.FDS.desc": "Fiche de données de sécurité",
   "cert.LABO.title": "Analyses labo",
-  "cert.LABO.desc": "Rapports d'analyses joints"
+  "cert.LABO.desc": "Rapports d'analyses joints",
+  "mkt.subtitle": "Catalogue des matières secondaires disponibles",
+  "mkt.searchPh": "Rechercher : marc de café, copeaux aluminium, chutes plastique...",
+  "mkt.search": "Rechercher",
+  "mkt.all": "Toutes",
+  "mkt.emptyTitle": "Aucune annonce trouvée",
+  "mkt.emptySub": "Essayez une autre catégorie ou un terme de recherche différent.",
+  "mkt.volume": "Volume",
+  "mkt.frequency": "Fréquence",
+  "mkt.pricePerKg": "Prix/kg",
+  "mkt.location": "Localisation",
+  "mkt.negotiable": "À négocier",
+  "freq.BIWEEKLY": "Bimensuel",
+  "freq.QUARTERLY": "Trimestriel"
 }
