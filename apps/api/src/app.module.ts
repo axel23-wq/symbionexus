@@ -15,15 +15,10 @@ import { MessagingModule } from './messaging/messaging.module';
 import { AuditModule } from './audit/audit.module';
 import { CollectionModule } from './collection/collection.module';
 import { PaymentsModule } from './payments/payments.module';
-import { CoreModule } from './core/core.module';
-import { LogisticsModule } from './logistics/logistics.module';
-import { GeospatialModule } from './geospatial/geospatial.module';
-import { DirectoryModule } from './directory/directory.module';
 import { AIModule } from './ai/ai.module';
 
 @Module({
   imports: [
-    CoreModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
@@ -43,9 +38,6 @@ import { AIModule } from './ai/ai.module';
     AuditModule,
     CollectionModule,
     PaymentsModule,
-    LogisticsModule,
-    GeospatialModule,
-    DirectoryModule,
     AIModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
