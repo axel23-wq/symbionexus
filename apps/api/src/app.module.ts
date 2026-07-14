@@ -23,8 +23,8 @@ import { AIModule } from './ai/ai.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    // Rate limiting global : 10000 req / 60s / IP (augmenté pour le développement)
-    ThrottlerModule.forRoot([{ ttl: 60000, limit: 10000 }]),
+    // Rate limiting global : 100 req / 60s / IP (anti brute-force / abus — R11, ADR-012)
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
     PrismaModule,
     AuthModule,
     UsersModule,
