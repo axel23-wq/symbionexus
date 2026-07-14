@@ -16,9 +16,12 @@
     "db:generate": "npx prisma generate"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.111.0",
     "@nestjs/common": "^11.0.0",
     "@nestjs/config": "^4.0.0",
     "@nestjs/core": "^11.0.0",
+    "@nestjs/cqrs": "^11.0.3",
+    "@nestjs/event-emitter": "^3.1.0",
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/passport": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
@@ -49,6 +52,7 @@
     "@types/express": "^5.0.0",
     "@types/fluent-ffmpeg": "^2.1.28",
     "@types/jest": "^30.0.0",
+    "@types/multer": "^2.2.0",
     "@types/node": "^22.0.0",
     "@types/passport-jwt": "^4.0.1",
     "@types/pdfkit": "^0.17.6",
