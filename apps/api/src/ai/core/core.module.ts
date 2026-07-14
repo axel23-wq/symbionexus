@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
+import { ConversationService } from './conversation.service';
 
 @Module({
-  providers: [],
-  exports: [],
+  providers: [ConversationService],
+  exports: [ConversationService],
 })
 export class AICorModule {}
