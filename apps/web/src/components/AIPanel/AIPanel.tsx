@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useReducer } from 'react';
+import { useEffect, useReducer } from 'react';
 import ChatWindow from './ChatWindow';
+import MessageInput from './MessageInput';
 import { AIPanelState, Message } from './types';
+import { useAIStreamConnection } from './useAIStreamConnection';
 import styles from './AIPanel.module.css';
 
 const initialState: AIPanelState = {
@@ -18,6 +20,7 @@ type Action =
   | { type: 'ADD_MESSAGE'; payload: Message }
   | { type: 'SET_INPUT'; payload: string }
   | { type: 'SET_LOADING'; payload: boolean }
+  | { type: 'UPDATE_LAST_MESSAGE'; payload: string }
   | { type: 'CLEAR_MESSAGES' };
 
 function reducer(state: AIPanelState, action: Action): AIPanelState {
@@ -30,6 +33,15 @@ function reducer(state: AIPanelState, action: Action): AIPanelState {
       return { ...state, currentInput: action.payload };
     case 'SET_LOADING':
       return { ...state, isLoading: action.payload };
+    case 'UPDATE_LAST_MESSAGE':
+      return {
+        ...state,
+        messages: state.messages.map((msg, idx) =>
+          idx === state.messages.length - 1
+            ? { ...msg, content: msg.content + action.payload, isStreaming: true }
+            : msg
+        ),
+      };
     case 'CLEAR_MESSAGES':
       return { ...state, messages: [] };
     default:
@@ -39,6 +51,7 @@ function reducer(state: AIPanelState, action: Action): AIPanelState {
 
 export default function AIPanel() {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const { sendMessage } = useAIStreamConnection();
 
   const handleSend = async () => {
     if (!state.currentInput.trim()) return;
@@ -54,7 +67,25 @@ export default function AIPanel() {
     dispatch({ type: 'SET_INPUT', payload: '' });
     dispatch({ type: 'SET_LOADING', payload: true });
 
-    // TODO: Call backend in Task 4
+    const assistantMsg: Message = {
+      id: Math.random().toString(36).substring(7),
+      role: 'assistant',
+      content: '',
+      timestamp: Date.now(),
+      isStreaming: true,
+    };
+    dispatch({ type: 'ADD_MESSAGE', payload: assistantMsg });
+
+    await sendMessage(
+      {
+        message: userMsg.content,
+        module: 'general',
+        conversationId: state.conversationId,
+      },
+      (token: string) => {
+        dispatch({ type: 'UPDATE_LAST_MESSAGE', payload: token });
+      }
+    );
 
     dispatch({ type: 'SET_LOADING', payload: false });
   };
@@ -64,6 +95,7 @@ export default function AIPanel() {
       <button
         className={styles['ai-float-button']}
         onClick={() => dispatch({ type: 'TOGGLE_OPEN' })}
+        title="SymbioNexus AI (Cmd+K)"
       >
         🤖
       </button>
@@ -71,6 +103,12 @@ export default function AIPanel() {
       {state.isOpen && (
         <div className={styles['ai-panel-window']}>
           <ChatWindow messages={state.messages} />
+          <MessageInput
+            value={state.currentInput}
+            onChange={(val) => dispatch({ type: 'SET_INPUT', payload: val })}
+            onSend={handleSend}
+            isLoading={state.isLoading}
+          />
         </div>
       )}
     </>
