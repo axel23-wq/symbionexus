@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useReducer } from 'react';
+import { usePathname } from 'next/navigation';
 import ChatWindow from './ChatWindow';
 import MessageInput from './MessageInput';
 import { AIPanelState, Message } from './types';
 import { useAIStreamConnection } from './useAIStreamConnection';
+import { detectModuleFromPath } from '@/lib/module-detector';
 import styles from './AIPanel.module.css';
 
 const initialState: AIPanelState = {
@@ -21,7 +23,8 @@ type Action =
   | { type: 'SET_INPUT'; payload: string }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'UPDATE_LAST_MESSAGE'; payload: string }
-  | { type: 'CLEAR_MESSAGES' };
+  | { type: 'CLEAR_MESSAGES' }
+  | { type: 'SET_MODULE'; payload: string };
 
 function reducer(state: AIPanelState, action: Action): AIPanelState {
   switch (action.type) {
@@ -44,6 +47,8 @@ function reducer(state: AIPanelState, action: Action): AIPanelState {
       };
     case 'CLEAR_MESSAGES':
       return { ...state, messages: [] };
+    case 'SET_MODULE':
+      return { ...state, selectedModule: action.payload };
     default:
       return state;
   }
@@ -52,6 +57,12 @@ function reducer(state: AIPanelState, action: Action): AIPanelState {
 export default function AIPanel() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const { sendMessage } = useAIStreamConnection();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const module = detectModuleFromPath(pathname);
+    dispatch({ type: 'SET_MODULE', payload: module });
+  }, [pathname]);
 
   const handleSend = async () => {
     if (!state.currentInput.trim()) return;
@@ -79,7 +90,7 @@ export default function AIPanel() {
     await sendMessage(
       {
         message: userMsg.content,
-        module: 'general',
+        module: state.selectedModule || 'general',
         conversationId: state.conversationId,
       },
       (token: string) => {
@@ -102,6 +113,9 @@ export default function AIPanel() {
 
       {state.isOpen && (
         <div className={styles['ai-panel-window']}>
+          <div style={{ fontSize: '0.75rem', padding: '8px', background: 'var(--color-bg-secondary)', borderBottom: '1px solid var(--color-border)', textAlign: 'center' }}>
+            Module: <strong>{state.selectedModule}</strong>
+          </div>
           <ChatWindow messages={state.messages} />
           <MessageInput
             value={state.currentInput}
