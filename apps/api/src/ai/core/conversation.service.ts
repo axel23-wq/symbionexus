@@ -1,10 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
 import { Message } from './types';
 
 @Injectable()
 export class ConversationService {
   private logger = new Logger(ConversationService.name);
-  private conversations = new Map<string, Message[]>();
+
+  constructor(private prisma: PrismaService) {}
 
   async createMessage(
     conversationId: string,
@@ -12,27 +14,67 @@ export class ConversationService {
     content: string,
     userId?: string
   ): Promise<Message> {
-    if (!this.conversations.has(conversationId)) {
-      this.conversations.set(conversationId, []);
+    // Create conversation if it doesn't exist
+    let conversation = await this.prisma.conversation.findUnique({
+      where: { id: conversationId },
+    });
+
+    if (!conversation && userId) {
+      conversation = await this.prisma.conversation.create({
+        data: {
+          id: conversationId,
+          userId,
+          module: 'general',
+        },
+      });
+      this.logger.debug(`Created new conversation: ${conversationId}`);
     }
 
-    const message: Message = {
-      id: Math.random().toString(36).substring(7),
-      conversationId,
-      role,
-      content,
-      createdAt: new Date(),
-    };
+    if (!conversation) {
+      throw new Error(`Conversation ${conversationId} not found`);
+    }
 
-    this.conversations.get(conversationId)!.push(message);
+    const message = await this.prisma.conversationMessage.create({
+      data: {
+        conversationId,
+        role,
+        content,
+      },
+    });
+
     this.logger.debug(
       `Saved ${role} message to conversation ${conversationId}`
     );
 
-    return message;
+    return {
+      id: message.id,
+      conversationId: message.conversationId,
+      role: message.role as 'user' | 'assistant',
+      content: message.content,
+      createdAt: message.createdAt,
+    };
   }
 
   async getHistory(conversationId: string): Promise<Message[]> {
-    return this.conversations.get(conversationId) || [];
+    const messages = await this.prisma.conversationMessage.findMany({
+      where: { conversationId },
+      orderBy: { createdAt: 'asc' },
+      take: 20, // Last 20 messages
+    });
+
+    return messages.map((msg: any) => ({
+      id: msg.id,
+      conversationId: msg.conversationId,
+      role: msg.role as 'user' | 'assistant',
+      content: msg.content,
+      createdAt: msg.createdAt,
+    }));
+  }
+
+  async getConversation(conversationId: string) {
+    return this.prisma.conversation.findUnique({
+      where: { id: conversationId },
+      include: { messages: { take: 20, orderBy: { createdAt: 'asc' } } },
+    });
   }
 }
