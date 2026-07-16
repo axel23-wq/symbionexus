@@ -110,6 +110,57 @@ const emptyEditForm = {
   volumeKg: 0 as number | string, frequency: 'MONTHLY', pricePerKg: 0 as number | string, city: 'Douala',
 };
 
+// --- PREMIUM MOCK DATA FOR "MES ANNONCES" ---
+const MOCK_MY_LISTINGS = [
+  {
+    id: 'my-mock-1',
+    title: 'Acier Inoxydable (Chutes de production)',
+    description: 'Chutes d\'acier inoxydable 304L issues de notre ligne de découpe laser. Matériau trié et propre, prêt pour refonte immédiate.',
+    materialType: 'Acier Inoxydable 304L',
+    materialCategory: 'METALS',
+    status: 'PUBLISHED',
+    volumeKg: 4500,
+    pricePerKg: 450,
+    frequency: 'MONTHLY',
+    latitude: 4.0511, // Douala
+    longitude: 9.7679,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
+    _count: { matches: 3 },
+  },
+  {
+    id: 'my-mock-2',
+    title: 'Granulés PET recyclés (rPET)',
+    description: 'Balles de bouteilles PET transparentes lavées et broyées, grade alimentaire approuvé par nos laboratoires de contrôle qualité.',
+    materialType: 'rPET Grade Alimentaire',
+    materialCategory: 'PLASTICS',
+    status: 'PUBLISHED',
+    volumeKg: 12000,
+    pricePerKg: 350,
+    frequency: 'WEEKLY',
+    latitude: 3.8480, // Yaounde
+    longitude: 11.5021,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
+    _count: { matches: 5 },
+  },
+  {
+    id: 'my-mock-3',
+    title: 'Coques de Cacao Séchées',
+    description: 'Biomasse à haut pouvoir calorifique (PCI élevé). Coques séchées issues de la transformation de fèves de cacao de notre usine.',
+    materialType: 'Biomasse (Coques Cacao)',
+    materialCategory: 'BIOMASS',
+    status: 'DRAFT',
+    volumeKg: 25000,
+    pricePerKg: 45,
+    frequency: 'ON_DEMAND',
+    latitude: 4.0511, // Douala
+    longitude: 9.7679,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString(),
+    _count: { matches: 0 },
+  }
+];
+let globalMockListings = [...MOCK_MY_LISTINGS];
+// ------------------------------------------
+
 export default function MyListingsPage() {
   const { t } = useTranslation();
   const [listings, setListings] = useState<any[]>([]);
@@ -127,9 +178,17 @@ export default function MyListingsPage() {
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
 
   const loadListings = useCallback(async () => {
+    setIsLoading(true);
     try {
-      const result = await api.getMyListings();
-      setListings(result.data || []);
+      let realData = [];
+      try {
+        const result = await api.getMyListings();
+        realData = result.data || [];
+      } catch (e) {
+        console.warn('API error, using mock data for my listings');
+      }
+      // Merge real API data with the Premium Mock Data
+      setListings([...realData, ...globalMockListings]);
     } catch (err) {
       console.error(err);
     } finally {
@@ -140,6 +199,11 @@ export default function MyListingsPage() {
   useEffect(() => { loadListings(); }, [loadListings]);
 
   const handlePublish = async (id: string) => {
+    if (id.startsWith('my-mock-')) {
+      globalMockListings = globalMockListings.map(l => l.id === id ? { ...l, status: 'PUBLISHED' } : l);
+      loadListings();
+      return;
+    }
     try {
       await api.publishListing(id);
       loadListings();
@@ -185,6 +249,14 @@ export default function MyListingsPage() {
     setIsDeleting(true);
     setDeleteError('');
     try {
+      if (deletingId.startsWith('my-mock-')) {
+        globalMockListings = globalMockListings.filter(l => l.id !== deletingId);
+        setDeletingId(null);
+        setIsDeleting(false);
+        loadListings();
+        return;
+      }
+
       await api.deleteListing(deletingId);
       setDeletingId(null);
       setIsDeleting(false);
@@ -229,6 +301,13 @@ export default function MyListingsPage() {
     setEditError('');
     try {
       const coords = getCoordsForCity(editForm.city);
+      if (editingId.startsWith('my-mock-')) {
+        globalMockListings = globalMockListings.map(l => l.id === editingId ? { ...l, ...editForm, volumeKg: Number(editForm.volumeKg), pricePerKg: Number(editForm.pricePerKg), latitude: coords.lat, longitude: coords.lon } : l);
+        closeEdit();
+        loadListings();
+        return;
+      }
+
       await api.updateListing(editingId, {
         title: editForm.title,
         materialType: editForm.materialType,
@@ -851,7 +930,12 @@ export default function MyListingsPage() {
                           <button className="btn-publier" style={{ flex: '1 1 45%' }} onClick={() => handlePublish(listing.id)}>✏️ {t('myl.publish')}</button>
                         )}
                         <button className="btn-modifier" style={{ flex: '1 1 45%' }} onClick={() => openEdit(listing)}>✎ {t('myl.edit')}</button>
-                        <Link href={`/marketplace/${listing.id}`} style={{ flex: '1 1 45%' }}>
+                        <Link href={`/marketplace/${listing.id}`} style={{ flex: '1 1 45%' }} onClick={(e) => {
+                          if (listing.id.startsWith('my-mock-')) {
+                            e.preventDefault();
+                            alert('Ceci est une annonce factice (Aperçu). Pour voir le détail complet, veuillez la dupliquer pour en créer une vraie.');
+                          }
+                        }}>
                           <button className="btn-voir">👁 {t('myl.view')}</button>
                         </Link>
                         <button className="btn-dupliquer" style={{ flex: '1 1 45%' }} disabled={duplicatingId === listing.id} onClick={() => handleDuplicate(listing)}>
