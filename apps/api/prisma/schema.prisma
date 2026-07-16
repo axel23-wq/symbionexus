@@ -37,11 +37,199 @@ model Company {
   sentMessages        Message[]            @relation("SentMessages")
   users               User[]
   listings            WasteListing[]
+  vehicles            Vehicle[]
+  drivers             Driver[]
+  predictions         AiPrediction[]
+
+  // --- Circular Economy Directory Relations ---
+  profile             CompanyProfile?
+  capacity            CompanyCapacity?
+  procurement         CompanyProcurement?
+  logistics           CompanyLogistics?
+  digitalAssets       CompanyDigitalAssets?
+  compliance          CompanyCompliance?
 
   @@index([companySector])
   @@index([companyLatitude, companyLongitude])
   @@index([kybStatus])
 }
+
+// ---------------------------------------------------------
+// DIRECTORY PROFILES & EXPANDED COMPANY DATA
+// ---------------------------------------------------------
+
+model CompanyProfile {
+  id                    String   @id @default(cuid())
+  companyId             String   @unique
+  company               Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  // Phase 2 - General Information
+  taxIdentificationNumber String? // NIU
+  organizationType      String?  // NGO, Enterprise, Govt, etc.
+  legalStatus           String?
+  yearCreated           Int?
+  ceoName               String?
+  managingDirector      String?
+  contactPerson         String?
+  contactPosition       String?
+  website               String?
+  email                 String?
+  phoneNumbers          String[] @default([])
+  whatsappNumber        String?
+  socialMedia           Json?    // { linkedin: "", facebook: "", twitter: "" }
+
+  // Detailed Address mapping
+  administrativeDivisionId String?
+  administrativeDivision   AdministrativeDivision? @relation(fields: [administrativeDivisionId], references: [id])
+  
+  // Phase 2 - Geographic Specifics
+  region                String?
+  division              String?
+  subdivision           String?
+  municipality          String?
+  district              String?
+  neighborhood          String?
+  street                String?
+  googleMapsUrl         String?
+  operatingRadiusKm     Float?
+  deliveryZones         String[] @default([])
+
+  // Activities (Categories)
+  activities            String[] @default([])
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([administrativeDivisionId])
+}
+
+model CompanyCapacity {
+  id                    String   @id @default(cuid())
+  companyId             String   @unique
+  company               Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  // Phase 3 - Industrial Capacity
+  dailyCapacityKg       Float?
+  monthlyCapacityKg     Float?
+  annualCapacityKg      Float?
+  storageCapacityKg     Float?
+  processingCapacityKg  Float?
+  
+  // Assets
+  availableEquipment    String[] @default([])
+  machinery             String[] @default([])
+  trucksCount           Int?
+  forkliftsCount        Int?
+  containersCount       Int?
+  collectionBinsCount   Int?
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model CompanyProcurement {
+  id                    String   @id @default(cuid())
+  companyId             String   @unique
+  company               Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  // Phase 4 - Procurement
+  materialsAccepted     String[] @default([])
+  materialsRejected     String[] @default([])
+  minimumQuantityKg     Float?
+  maximumQuantityKg     Float?
+  buyingPricePerKg      Float?
+  buyingPricePerTon     Float?
+  sellingPricePerKg     Float?
+  
+  // Conditions
+  materialQualityStandards String?
+  packagingRequirements    String?
+  deliveryConditions       String?
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model CompanyLogistics {
+  id                    String   @id @default(cuid())
+  companyId             String   @unique
+  company               Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  // Phase 5 - Logistics
+  collectionService     Boolean  @default(false)
+  pickupAvailability    Boolean  @default(false)
+  homeCollection        Boolean  @default(false)
+  industrialCollection  Boolean  @default(false)
+  
+  truckFleetSize        Int?
+  vehicleTypes          String[] @default([])
+  collectionSchedule    String?
+  gpsTrackingAvailable  Boolean  @default(false)
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model CompanyDigitalAssets {
+  id                    String   @id @default(cuid())
+  companyId             String   @unique
+  company               Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  // Phase 6 - Digital Services
+  apiAvailability       Boolean  @default(false)
+  erpIntegration        String[] @default([]) // SAP, Odoo, Oracle, etc.
+  webhookSupport        Boolean  @default(false)
+  ediSupport            Boolean  @default(false)
+  iotSensors            Boolean  @default(false)
+  digitalProductPassport Boolean @default(false)
+  blockchainTraceability Boolean @default(false)
+
+  // Phase 7 - Payments
+  acceptedPayments      String[] @default([]) // Orange Money, MTN MoMo, Cash, Bank Transfer
+  escrowSupport         Boolean  @default(false)
+  automaticSettlement   Boolean  @default(false)
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model CompanyCompliance {
+  id                    String   @id @default(cuid())
+  companyId             String   @unique
+  company               Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  // Phase 8 - Compliance
+  environmentalCertifications String[] @default([])
+  isoCertifications     String[] @default([])
+  businessLicenses      String[] @default([])
+  governmentApprovals   String[] @default([])
+  wastePermits          String[] @default([])
+  esgCompliance         Boolean  @default(false)
+  carbonReporting       Boolean  @default(false)
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model AdministrativeDivision {
+  id          String   @id @default(cuid())
+  region      String   // e.g. Littoral
+  division    String   // e.g. Wouri
+  subdivision String   // e.g. Douala I, Douala II
+  name        String   // Neighborhood name e.g. Akwa, Bonanjo
+  latitude    Float?
+  longitude   Float?
+  
+  companyProfiles CompanyProfile[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([region, division, subdivision, name])
+  @@index([region, division, subdivision])
+}
+
+// ---------------------------------------------------------
 
 model User {
   id                 String              @id @default(cuid())
@@ -49,7 +237,8 @@ model User {
   passwordHash       String
   firstName          String
   lastName           String
-  role               Role                @default(SELLER)
+  roleId             String?
+  role               Role?               @relation(fields: [roleId], references: [id])
   avatarUrl          String?
   isActive           Boolean             @default(true)
   companyId          String
@@ -63,9 +252,10 @@ model User {
   notifications      Notification[]
   company            Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
   wallet             Wallet?
+  conversations      Conversation[]
 
   @@index([companyId])
-  @@index([role])
+  @@index([roleId])
 }
 
 model WasteListing {
@@ -88,6 +278,7 @@ model WasteListing {
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
   matches          Match[]
+  pricingHistory   PricingHistory[]
   company          Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@index([companyId])
@@ -105,6 +296,7 @@ model Match {
   scoreBreakdown     Json
   distanceKm         Float
   status             MatchStatus  @default(PROPOSED)
+  xaiJustification   Json?        // Explainable AI Engine
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
   contract           Contract?
@@ -165,9 +357,12 @@ model MaterialPassport {
   updatedAt         DateTime        @updatedAt
   carbonCredit      CarbonCredit?
   contract          Contract        @relation(fields: [contractId], references: [id])
+  vehicleId         String?
+  vehicle           Vehicle?        @relation(fields: [vehicleId], references: [id])
 
   @@index([contractId])
   @@index([transportStatus])
+  @@index([vehicleId])
 }
 
 model CarbonCredit {
@@ -249,10 +444,98 @@ model Notification {
   createdAt DateTime         @default(now())
   user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId, isRead])
-  @@index([createdAt])
+  @@index([userId])
+  @@index([isRead])
 }
 
+// ==========================================
+// SYMBIONEXUS V5: AI & SUPPLY CHAIN
+// ==========================================
+
+model Vehicle {
+  id             String        @id @default(cuid())
+  companyId      String
+  plateNumber    String        @unique
+  vehicleType    String        @default("TRUCK") // TRUCK, VAN, PICKUP
+  capacityKg     Float
+  currentLat     Float?
+  currentLng     Float?
+  status         VehicleStatus @default(AVAILABLE)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  company        Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  drivers        Driver[]
+  assignedPassports MaterialPassport[]
+
+  @@index([companyId])
+  @@index([status])
+}
+
+enum VehicleStatus {
+  AVAILABLE
+  IN_TRANSIT
+  MAINTENANCE
+  OFF_DUTY
+}
+
+model Driver {
+  id             String       @id @default(cuid())
+  companyId      String
+  name           String
+  phone          String
+  status         DriverStatus @default(AVAILABLE)
+  vehicleId      String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  company        Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  vehicle        Vehicle?     @relation(fields: [vehicleId], references: [id])
+
+  @@index([companyId])
+  @@index([vehicleId])
+}
+
+enum DriverStatus {
+  AVAILABLE
+  ON_ROUTE
+  OFF_DUTY
+}
+
+model AiPrediction {
+  id               String   @id @default(cuid())
+  materialCategory String
+  predictedVolumeKg Float
+  predictionDate   DateTime // Forecast date (J+7, J+14...)
+  confidenceScore  Float
+  companyId        String?
+  createdAt        DateTime @default(now())
+  company          Company? @relation(fields: [companyId], references: [id])
+
+  @@index([materialCategory])
+  @@index([predictionDate])
+}
+
+model PricingHistory {
+  id               String   @id @default(cuid())
+  listingId        String
+  recommendedPrice Float
+  intervalMin      Float
+  intervalMax      Float
+  confidenceScore  Float
+  createdAt        DateTime @default(now())
+  listing          WasteListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
+}
+
+model AiLearningLog {
+  id               String   @id @default(cuid())
+  matchId          String
+  result           String   // SUCCESS, FAILURE
+  scoreAdjustments Json     // { "trustScore": +0.05, "distanceWeight": -0.01 }
+  createdAt        DateTime @default(now())
+  
+  @@index([matchId])
+}
 model ApiKey {
   id         String    @id @default(cuid())
   companyId  String
@@ -270,16 +553,21 @@ model ApiKey {
 }
 
 model AuditLog {
-  id        String      @id @default(cuid())
-  userId    String
-  action    String
-  ipAddress String?
-  status    AuditStatus @default(SUCCESS)
-  metadata  Json?
-  createdAt DateTime    @default(now())
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         String      @id @default(cuid())
+  userId     String
+  action     String
+  entityType String?
+  entityId   String?
+  ipAddress  String?
+  status     AuditStatus @default(SUCCESS)
+  metadata   Json?
+  oldData    Json?
+  newData    Json?
+  createdAt  DateTime    @default(now())
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
+  @@index([entityType, entityId])
 }
 
 model CollectionRequest {
@@ -368,12 +656,51 @@ enum PayoutStatus {
   FAILED // échec prestataire → wallet recrédité
 }
 
-enum Role {
-  SELLER
-  BUYER
-  TRANSPORTER
-  REGULATOR
-  ADMIN
+model Role {
+  id          String           @id @default(cuid())
+  name        String           @unique
+  description String?
+  isSystem    Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  users       User[]
+  permissions RolePermission[]
+}
+
+model Permission {
+  id          String           @id @default(cuid())
+  action      String           @unique
+  description String?
+  roles       RolePermission[]
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+}
+
+model FileEntity {
+  id           String   @id @default(cuid())
+  filename     String
+  originalName String?
+  url          String
+  mimeType   String
+  sizeBytes  Int
+  entityType String?
+  entityId   String?
+  companyId  String?
+  uploaderId String
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([companyId])
+  @@index([uploaderId])
 }
 
 enum KYBStatus {
@@ -489,4 +816,222 @@ enum WalletTxType {
   CREDIT
   DEBIT
   PAYOUT
+}
+
+// ==========================================
+// GEOSPATIAL ENGINE — GEOCORE ENTREPRISE
+// Hiérarchie : Pays → Région → Département → Arrondissement → Commune → Quartier → Sous-Quartier → Bloc
+// ==========================================
+
+// ---------- Zones Géographiques (Arbre auto-référencé) ----------
+
+enum ZoneType {
+  COUNTRY
+  REGION
+  DEPARTMENT
+  DISTRICT        // Arrondissement
+  COMMUNE
+  QUARTER         // Quartier (Akwa, Bonanjo, Bonamoussadi…)
+  SUB_QUARTER     // Sous-quartier / Bloc
+  INDUSTRIAL_ZONE
+  COMMERCIAL_ZONE
+  RESIDENTIAL_ZONE
+  AGRICULTURAL_ZONE
+  MARKET_ZONE
+  PORT_ZONE
+  ROAD_AXIS
+}
+
+model GeoZone {
+  id              String      @id @default(cuid())
+  name            String                    // Ex: "Bonamoussadi", "Douala V", "Littoral"
+  type            ZoneType
+  code            String?     @unique       // Code administratif officiel
+  population      Int?
+  latitude        Float?                    // Centre de la zone
+  longitude       Float?
+  boundary        Json?                     // Limites GeoJSON (Polygon / MultiPolygon)
+
+  parentId        String?
+  parent          GeoZone?    @relation("ZoneHierarchy", fields: [parentId], references: [id])
+  children        GeoZone[]   @relation("ZoneHierarchy")
+
+  confidenceLevel Float       @default(0)
+  officialSource  String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  locations       GeoLocation[]
+
+  @@index([type])
+  @@index([parentId])
+  @@index([name])
+}
+
+// ---------- Points d'Intérêt (POI) ----------
+
+enum GeoCategory {
+  // Infrastructure & Industrie
+  PORT
+  INDUSTRIAL_ZONE
+  RECYCLING_CENTER
+  SORTING_CENTER
+  WASTE_DUMP
+  WAREHOUSE
+  FACTORY
+  LOGISTICS_HUB
+  DEPOT
+
+  // Santé
+  HOSPITAL
+  CLINIC
+  PHARMACY
+
+  // Administration
+  MUNICIPALITY       // Mairie
+  URBAN_COMMUNITY    // Communauté urbaine
+  GENDARMERIE
+  POLICE_STATION
+  FIRE_DEPARTMENT
+  SCHOOL
+  UNIVERSITY
+
+  // Commerce & Finance
+  BANK
+  MICROFINANCE
+  MOBILE_MONEY_AGENT
+  GAS_STATION
+  MARKET
+  HOTEL
+  RESTAURANT
+
+  // Transport
+  AIRPORT
+  TRAIN_STATION
+
+  // Acteurs SymbioNexus
+  ENTERPRISE
+  COLLECTOR
+  SUPPLIER
+  CUSTOMER
+  PARTNER
+  NGO
+  ASSOCIATION
+
+  // Autre
+  OTHER
+}
+
+model GeoLocation {
+  id                String       @id @default(cuid())
+  officialName      String
+  category          GeoCategory
+  subCategory       String?
+
+  // Localisation
+  address           String?
+  quarter           String?
+  district          String       // Ex: Douala I, Douala II (dénormalisé pour les requêtes rapides)
+  city              String       @default("Douala")
+  region            String       @default("Littoral")
+
+  latitude          Float
+  longitude         Float
+  googlePlaceId     String?      @unique
+
+  // Contact & Informations
+  phone             String?
+  email             String?
+  website           String?
+  businessHours     Json?
+  description       String?
+  services          String       @default("[]")
+  status            String
+  capacity          Json?
+  photos            String       @default("[]")
+  documents         String       @default("[]")
+  rating            Float?       // Notation 0-5
+
+  // Traçabilité & Qualité
+  confidenceLevel   Float
+  officialSource    String?
+  importedAt        DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  version           Int          @default(1)
+
+  // Relation vers la zone géographique (hiérarchie)
+  geoZoneId         String?
+  geoZone           GeoZone?     @relation(fields: [geoZoneId], references: [id])
+
+  history           GeoHistory[]
+
+  @@index([category, district])
+  @@index([latitude, longitude])
+  @@index([geoZoneId])
+  @@index([status])
+  @@index([officialName])
+}
+
+model GeoHistory {
+  id              String      @id @default(cuid())
+  geoLocationId   String
+  changedFields   Json
+  updatedBySystem Boolean     @default(true)
+  createdAt       DateTime    @default(now())
+
+  location        GeoLocation @relation(fields: [geoLocationId], references: [id], onDelete: Cascade)
+
+  @@index([geoLocationId])
+}
+
+model GeoImportJob {
+  id              String      @id @default(cuid())
+  sourceName      String
+  status          String      // PENDING | SUCCESS | FAILED
+  recordsImported Int         @default(0)
+  recordsFailed   Int         @default(0)
+  errors          Json?
+  startedAt       DateTime    @default(now())
+  completedAt     DateTime?
+
+  @@index([sourceName])
+  @@index([status])
+}
+
+model Conversation {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  ConversationMessage[]
+  module    String   @default("general")
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model ConversationMessage {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String       // 'user' | 'assistant'
+  content        String       @db.Text
+  tokenCount     Int?
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId])
+}
+
+model CodeChunk {
+  id        String   @id @default(cuid())
+  filePath  String
+  content   String   @db.Text
+  startLine Int
+  endLine   Int
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([filePath])
 }

@@ -7,6 +7,21 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌿 Seeding SymbioNexus database (Cameroun)...\n');
 
+  // Cleanup existing data (in reverse order of dependencies)
+  await prisma.notification.deleteMany();
+  await prisma.message.deleteMany();
+  await prisma.carbonCredit.deleteMany();
+  await prisma.materialPassport.deleteMany();
+  await prisma.contract.deleteMany();
+  await prisma.match.deleteMany();
+  await prisma.wasteListing.deleteMany();
+  await prisma.auditLog.deleteMany();
+  await prisma.user.deleteMany();
+  await prisma.company.deleteMany();
+  await prisma.role.deleteMany();
+  await prisma.company.deleteMany();
+  await prisma.role.deleteMany();
+
   // ============ COMPANIES ============
   const companies = await Promise.all([
     prisma.company.create({
@@ -156,9 +171,16 @@ async function main() {
 
   console.log(`✅ Created ${companies.length} companies`);
 
-  // ============ USERS ============
-  const passwordHash = await bcrypt.hash('Demo2024!', 12);
+  // ============ ROLES ============
+  console.log('Création des rôles...');
+  const roleSeller = await prisma.role.create({ data: { name: 'SELLER' } });
+  const roleBuyer = await prisma.role.create({ data: { name: 'BUYER' } });
+  const roleAdmin = await prisma.role.create({ data: { name: 'ADMIN' } });
+  const roleTransporter = await prisma.role.create({ data: { name: 'TRANSPORTER' } });
 
+  // ============ USERS ============
+  const passwordHash = await bcrypt.hash('Demo2024!', 10);
+  console.log('Création des utilisateurs...');
   const users = await Promise.all([
     prisma.user.create({
       data: {
@@ -166,8 +188,7 @@ async function main() {
         passwordHash,
         firstName: 'Marie',
         lastName: 'Ngo',
-        role: 'SELLER',
-        companyId: companies[0].id,
+        role: { connect: { id: roleSeller.id } },  company: { connect: { id: companies[0].id } },
       },
     }),
     prisma.user.create({
@@ -176,8 +197,8 @@ async function main() {
         passwordHash,
         firstName: 'Pierre',
         lastName: 'Mbarga',
-        role: 'BUYER',
-        companyId: companies[1].id,
+        role: { connect: { id: roleBuyer.id } },
+        company: { connect: { id: companies[1].id } },
       },
     }),
     prisma.user.create({
@@ -186,8 +207,8 @@ async function main() {
         passwordHash,
         firstName: 'Sophie',
         lastName: 'Fotso',
-        role: 'BUYER',
-        companyId: companies[2].id,
+        role: { connect: { id: roleBuyer.id } },
+        company: { connect: { id: companies[2].id } },
       },
     }),
     prisma.user.create({
@@ -196,8 +217,8 @@ async function main() {
         passwordHash,
         firstName: 'Luc',
         lastName: 'Kamga',
-        role: 'SELLER',
-        companyId: companies[3].id,
+        role: { connect: { id: roleSeller.id } },
+        company: { connect: { id: companies[3].id } },
       },
     }),
     prisma.user.create({
@@ -206,8 +227,8 @@ async function main() {
         passwordHash,
         firstName: 'Jean',
         lastName: 'Essomba',
-        role: 'SELLER',
-        companyId: companies[4].id,
+        role: { connect: { id: roleSeller.id } },
+        company: { connect: { id: companies[4].id } },
       },
     }),
     prisma.user.create({
@@ -216,8 +237,8 @@ async function main() {
         passwordHash,
         firstName: 'Claire',
         lastName: 'Nkoulou',
-        role: 'BUYER',
-        companyId: companies[5].id,
+        role: { connect: { id: roleBuyer.id } },
+        company: { connect: { id: companies[5].id } },
       },
     }),
     prisma.user.create({
@@ -226,8 +247,8 @@ async function main() {
         passwordHash,
         firstName: 'Antoine',
         lastName: 'Tabi',
-        role: 'BUYER',
-        companyId: companies[6].id,
+        role: { connect: { id: roleBuyer.id } },
+        company: { connect: { id: companies[6].id } },
       },
     }),
     prisma.user.create({
@@ -236,8 +257,8 @@ async function main() {
         passwordHash,
         firstName: 'Marc',
         lastName: 'Ekwalla',
-        role: 'TRANSPORTER',
-        companyId: companies[7].id,
+        role: { connect: { id: roleTransporter.id } },
+        company: { connect: { id: companies[7].id } },
       },
     }),
     prisma.user.create({
@@ -246,8 +267,8 @@ async function main() {
         passwordHash,
         firstName: 'Admin',
         lastName: 'SymbioNexus',
-        role: 'ADMIN',
-        companyId: companies[8].id,
+        role: { connect: { id: roleAdmin.id } },
+        company: { connect: { id: companies[8].id } },
       },
     }),
   ]);
