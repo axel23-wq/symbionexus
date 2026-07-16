@@ -27,7 +27,18 @@ export class AIController {
       console.error('Response stream error:', err);
     });
 
+    const timeout = setTimeout(() => {
+      if (!res.writableEnded) {
+        res.write(`data: ${JSON.stringify({ type: 'error', error: 'Réponse dépassée (>30s)' })}\n\n`);
+        res.end();
+      }
+    }, 30000);
+
     try {
+      if (!dto.message || dto.message.trim().length === 0) {
+        throw new Error('Message cannot be empty');
+      }
+
       await this.aiService.processMessage(
         dto.message,
         dto.module || 'general',
@@ -35,27 +46,24 @@ export class AIController {
         userId,
         (token: string) => {
           const data = JSON.stringify({ type: 'token', token });
-          const success = res.write(`data: ${data}\n\n`);
-          if (!success) {
-            console.warn('Failed to write token to response');
+          if (!res.writableEnded) {
+            res.write(`data: ${data}\n\n`);
           }
         }
       );
 
-      const success = res.write(`data: ${JSON.stringify({ type: 'end' })}\n\n`);
-      if (!success) {
-        console.warn('Failed to write end marker');
+      clearTimeout(timeout);
+      if (!res.writableEnded) {
+        res.write(`data: ${JSON.stringify({ type: 'end' })}\n\n`);
+        res.end();
       }
-      res.end();
     } catch (error) {
+      clearTimeout(timeout);
       const errorMessage = error instanceof Error ? error.message : String(error);
-      const success = res.write(
-        `data: ${JSON.stringify({ type: 'error', error: errorMessage })}\n\n`
-      );
-      if (!success) {
-        console.warn('Failed to write error');
+      if (!res.writableEnded) {
+        res.write(`data: ${JSON.stringify({ type: 'error', error: errorMessage })}\n\n`);
+        res.end();
       }
-      res.end();
     }
   }
 }
