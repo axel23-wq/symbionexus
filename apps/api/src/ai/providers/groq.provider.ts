@@ -3,7 +3,7 @@ import { AIProvider, ChatOptions } from './provider.interface';
 
 @Injectable()
 export class GroqProvider implements AIProvider {
-  private model = 'mixtral-8x7b-32768';
+  private model = 'llama-3.1-70b-versatile'; // Updated from deprecated mixtral
   private logger = new Logger(GroqProvider.name);
   private apiKey: string;
   private baseUrl = 'https://api.groq.com/openai/v1';
