@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useReducer } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import ChatWindow from './ChatWindow';
 import MessageInput from './MessageInput';
@@ -25,6 +25,12 @@ type Action =
   | { type: 'UPDATE_LAST_MESSAGE'; payload: string }
   | { type: 'CLEAR_MESSAGES' }
   | { type: 'SET_MODULE'; payload: string };
+
+interface DragState {
+  isDragging: boolean;
+  offset: { x: number; y: number };
+  startPos: { x: number; y: number };
+}
 
 function reducer(state: AIPanelState, action: Action): AIPanelState {
   switch (action.type) {
@@ -58,11 +64,59 @@ export default function AIPanel() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const { sendMessage } = useAIStreamConnection();
   const pathname = usePathname();
+  const panelRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+
+  const [drag, setDrag] = useState<DragState>({
+    isDragging: false,
+    offset: { x: 0, y: 0 },
+    startPos: { x: 0, y: 0 },
+  });
+  const [panelPos, setPanelPos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const module = detectModuleFromPath(pathname);
     dispatch({ type: 'SET_MODULE', payload: module });
   }, [pathname]);
+
+  // Mouse down handler
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!panelRef.current) return;
+    const rect = panelRef.current.getBoundingClientRect();
+    setDrag({
+      isDragging: true,
+      startPos: { x: e.clientX, y: e.clientY },
+      offset: { x: rect.left + panelPos.x, y: rect.top + panelPos.y },
+    });
+  };
+
+  // Mouse move handler
+  useEffect(() => {
+    if (!drag.isDragging) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const deltaX = e.clientX - drag.startPos.x;
+      const deltaY = e.clientY - drag.startPos.y;
+
+      setPanelPos({
+        x: deltaX,
+        y: deltaY,
+      });
+    };
+
+    const handleMouseUp = () => {
+      setDrag({ ...drag, isDragging: false });
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [drag]);
 
   const handleSend = async () => {
     if (!state.currentInput.trim()) return;
@@ -104,6 +158,7 @@ export default function AIPanel() {
   return (
     <>
       <button
+        ref={buttonRef}
         className={styles['ai-float-button']}
         onClick={() => dispatch({ type: 'TOGGLE_OPEN' })}
         title="SymbioNexus AI (Cmd+K)"
@@ -112,8 +167,19 @@ export default function AIPanel() {
       </button>
 
       {state.isOpen && (
-        <div className={styles['ai-panel-window']}>
-          <div style={{ fontSize: '0.75rem', padding: '8px', background: 'var(--color-bg-secondary)', borderBottom: '1px solid var(--color-border)', textAlign: 'center' }}>
+        <div
+          ref={panelRef}
+          className={styles['ai-panel-window']}
+          style={{
+            transform: `translate(${panelPos.x}px, ${panelPos.y}px)`,
+            transition: drag.isDragging ? 'none' : 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
+          }}
+        >
+          <div
+            ref={headerRef}
+            className={styles['ai-panel-header']}
+            onMouseDown={handleMouseDown}
+          >
             Module: <strong>{state.selectedModule}</strong>
           </div>
           <ChatWindow messages={state.messages} />

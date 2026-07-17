@@ -2,6 +2,8 @@
 
 import { useCallback, useState } from 'react';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+
 export interface StreamMessage {
   message: string;
   module?: string;
@@ -16,7 +18,7 @@ export function useAIStreamConnection() {
       setIsConnected(true);
 
       try {
-        const response = await fetch('/api/v1/ai/chat', {
+        const response = await fetch(`${API_URL}/ai/chat`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
