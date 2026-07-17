@@ -13,10 +13,10 @@ export class AIController {
   @Post('chat')
   async chat(
     @Body() dto: CreateChatMessageDto,
-    @Req() req: Request & { user: { id: string } },
+    @Req() req: Request & { user: { sub: string; email: string; role: string; companyId: string } },
     @Res() res: Response
   ) {
-    const userId = req.user.id;
+    const userId = req.user.sub;
     const conversationId = dto.conversationId || randomUUID();
 
     res.setHeader('Content-Type', 'text/event-stream');
