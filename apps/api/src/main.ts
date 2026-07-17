@@ -15,20 +15,21 @@ async function bootstrap() {
   app.setGlobalPrefix('api/v1');
 
   // CORS - Allow frontend to communicate
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:3001',
+    process.env.FRONTEND_URL,
+  ].filter(Boolean);
+
   const corsOptions = {
     origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-      const allowedOrigins = [
-        'http://localhost:3000',
-        'http://127.0.0.1:3000',
-        'http://localhost:3001',
-        process.env.FRONTEND_URL,
-      ].filter(Boolean);
-
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        console.warn(`❌ CORS blocked: ${origin}`);
-        callback(new Error(`CORS not allowed for ${origin}`));
+        console.warn(`❌ CORS blocked: ${origin}. Allowed: ${allowedOrigins.join(', ')}`);
+        callback(null, false);
       }
     },
     credentials: true,
@@ -36,10 +37,11 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     exposedHeaders: ['Content-Type', 'Authorization'],
     optionsSuccessStatus: 200,
+    maxAge: 86400,
   };
 
   app.enableCors(corsOptions);
-  console.log('✅ CORS enabled for:', ['http://localhost:3000', 'http://127.0.0.1:3000', process.env.FRONTEND_URL].filter(Boolean));
+  console.log('✅ CORS enabled for:', allowedOrigins);
 
   // Validation
   app.useGlobalPipes(
