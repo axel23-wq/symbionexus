@@ -7,6 +7,7 @@ interface MessageInputProps {
   onChange: (value: string) => void;
   onSend: () => void;
   isLoading: boolean;
+  placeholder?: string;
 }
 
 export default function MessageInput({
@@ -14,6 +15,7 @@ export default function MessageInput({
   onChange,
   onSend,
   isLoading,
+  placeholder = 'Votre question...',
 }: MessageInputProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -38,7 +40,7 @@ export default function MessageInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Votre question..."
+        placeholder={placeholder}
         style={{
           flex: 1,
           padding: '8px',

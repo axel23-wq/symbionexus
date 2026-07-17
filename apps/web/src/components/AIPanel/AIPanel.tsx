@@ -9,6 +9,13 @@ import { useAIStreamConnection } from './useAIStreamConnection';
 import { detectModuleFromPath } from '@/lib/module-detector';
 import styles from './AIPanel.module.css';
 
+const SUGGESTED_QUESTIONS = [
+  'Circular Economy Trends Analysis',
+  'Optimizing a Circular Ad Listing',
+  'Carbon Impact Calculator',
+  'Marketplace Matchmaking Insights',
+];
+
 const initialState: AIPanelState = {
   isOpen: false,
   messages: [],
@@ -67,6 +74,7 @@ export default function AIPanel() {
   const panelRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [drag, setDrag] = useState<DragState>({
     isDragging: false,
@@ -74,13 +82,13 @@ export default function AIPanel() {
     startPos: { x: 0, y: 0 },
   });
   const [panelPos, setPanelPos] = useState({ x: 0, y: 0 });
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   useEffect(() => {
     const module = detectModuleFromPath(pathname);
     dispatch({ type: 'SET_MODULE', payload: module });
   }, [pathname]);
 
-  // Mouse down handler
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!panelRef.current) return;
     const rect = panelRef.current.getBoundingClientRect();
@@ -91,7 +99,6 @@ export default function AIPanel() {
     });
   };
 
-  // Mouse move handler
   useEffect(() => {
     if (!drag.isDragging) return;
 
@@ -155,6 +162,23 @@ export default function AIPanel() {
     dispatch({ type: 'SET_LOADING', payload: false });
   };
 
+  const handleSuggestedQuestion = (question: string) => {
+    dispatch({ type: 'SET_INPUT', payload: question });
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setSelectedFiles(Array.from(e.target.files));
+    }
+  };
+
+  const handleToolClick = (tool: string) => {
+    if (tool === 'camera') fileInputRef.current?.click();
+    else if (tool === 'video') fileInputRef.current?.click();
+    else if (tool === 'document') fileInputRef.current?.click();
+    else if (tool === 'microphone') console.log('Microphone not yet implemented');
+  };
+
   return (
     <>
       <button
@@ -175,19 +199,99 @@ export default function AIPanel() {
             transition: drag.isDragging ? 'none' : 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
           }}
         >
+          {/* Header */}
           <div
             ref={headerRef}
             className={styles['ai-panel-header']}
             onMouseDown={handleMouseDown}
           >
-            Module: <strong>{state.selectedModule}</strong>
+            <div className={styles['header-left']}>
+              <span className={styles['header-icon']}>🌿</span>
+              <span className={styles['header-title']}>SymbioNexus AI Assistant</span>
+            </div>
+            <button className={styles['header-settings']}>⚙️</button>
           </div>
+
+          {/* Chat Window */}
           <ChatWindow messages={state.messages} />
-          <MessageInput
-            value={state.currentInput}
-            onChange={(val) => dispatch({ type: 'SET_INPUT', payload: val })}
-            onSend={handleSend}
-            isLoading={state.isLoading}
+
+          {/* Suggested Questions */}
+          {state.messages.length === 0 && (
+            <div className={styles['suggested-section']}>
+              <div className={styles['suggested-title']}>Suggested Questions</div>
+              <div className={styles['suggested-grid']}>
+                {SUGGESTED_QUESTIONS.map((q, idx) => (
+                  <button
+                    key={idx}
+                    className={styles['suggested-button']}
+                    onClick={() => handleSuggestedQuestion(q)}
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* File Preview */}
+          {selectedFiles.length > 0 && (
+            <div className={styles['file-preview']}>
+              {selectedFiles.map((file, idx) => (
+                <div key={idx} className={styles['file-item']}>
+                  {file.type.startsWith('image/') ? '🖼️' : '📄'} {file.name}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Tool Toolbar + Input */}
+          <div className={styles['input-section']}>
+            <div className={styles['tool-toolbar']}>
+              <button
+                className={styles['tool-button']}
+                onClick={() => handleToolClick('camera')}
+                title="Camera"
+              >
+                📷
+              </button>
+              <button
+                className={styles['tool-button']}
+                onClick={() => handleToolClick('video')}
+                title="Video"
+              >
+                🎥
+              </button>
+              <button
+                className={styles['tool-button']}
+                onClick={() => handleToolClick('document')}
+                title="Document"
+              >
+                📄
+              </button>
+              <button
+                className={styles['tool-button']}
+                onClick={() => handleToolClick('microphone')}
+                title="Microphone"
+              >
+                🎤
+              </button>
+            </div>
+
+            <MessageInput
+              value={state.currentInput}
+              onChange={(val) => dispatch({ type: 'SET_INPUT', payload: val })}
+              onSend={handleSend}
+              isLoading={state.isLoading}
+              placeholder="Demandez-moi n'importe quoi..."
+            />
+          </div>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            style={{ display: 'none' }}
+            onChange={handleFileSelect}
           />
         </div>
       )}
