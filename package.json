@@ -9,6 +9,7 @@
   ],
   "scripts": {
     "dev": "concurrently \"npm run dev:web\" \"npm run dev:api\"",
+    "dev:mobile": "cd apps/mobile && npx expo start",
     "dev:web": "npm -w apps/web run dev",
     "dev:api": "npm -w apps/api run start:dev",
     "build": "npm -w apps/web run build",
@@ -22,6 +23,7 @@
   },
   "dependencies": {
     "@ai-sdk/react": "^4.0.7",
-    "ai": "^7.0.6"
+    "ai": "^7.0.6",
+    "qrcode": "^1.5.4"
   }
 }

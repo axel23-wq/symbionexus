@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n/LanguageProvider';
+import UserProfileMenu from './UserProfileMenu';
 
 interface NavItem {
   icon: string;
@@ -16,6 +17,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { icon: '📊', tkey: 'nav.dashboard', href: '/dashboard' },
+  { icon: '🌍', tkey: 'nav.directory', label: 'Annuaire National', href: '/directory' },
   { icon: '🏪', tkey: 'nav.marketplace', href: '/marketplace' },
   { icon: '♻️', tkey: 'nav.citizen', href: '/citizen' },
   { icon: '🛰️', tkey: 'nav.controlRoom', href: '/control-room' },
@@ -23,6 +25,7 @@ const NAV_ITEMS: NavItem[] = [
   { icon: '🤖', tkey: 'nav.matches', href: '/matches' },
   { icon: '📝', tkey: 'nav.contracts', href: '/contracts' },
   { icon: '📦', tkey: 'nav.passports', href: '/passports' },
+  { icon: '📜', label: 'Passeport Officiel', href: '/official-passport' },
   { icon: '🌱', tkey: 'nav.carbon', href: '/carbon' },
   { icon: '💬', tkey: 'nav.messages', href: '/messages' },
 ];
@@ -39,12 +42,11 @@ export default function Sidebar() {
 
   if (!user) return null;
 
-  const filteredItems = NAV_ITEMS.filter(
-    (item) => !item.roles || item.roles.includes(user.role)
-  );
+  // Afficher toutes les fonctionnalités pour la démonstration (désactivation des filtres par rôle)
+  const filteredItems = NAV_ITEMS;
 
   return (
-    <aside className="sidebar">
+    <aside className="sidebar border-2 border-[#00ff99] shadow-[0_0_20px_rgba(0,255,153,1),0_0_40px_rgba(0,255,153,0.8),0_0_60px_rgba(0,255,153,0.6),inset_0_0_15px_rgba(0,255,153,0.8)] rounded-2xl">
       {/* Logo */}
       <div className="sidebar-logo">
         <div className="sidebar-logo-icon">🌿</div>
@@ -74,8 +76,8 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      {/* Admin section */}
-      {user.role === 'ADMIN' && (
+      {/* Admin section - Toujours visible pour la démo */}
+      {true && (
         <nav className="nav-section">
           <div className="nav-section-title">{t('nav.sectionAdmin')}</div>
           {ADMIN_ITEMS.map((item) => (
@@ -102,43 +104,9 @@ export default function Sidebar() {
         </Link>
       </div>
 
-      {/* User profile card at bottom */}
-      <div style={{ paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          padding: '12px',
-          borderRadius: 'var(--radius-md)',
-          background: 'var(--color-bg-glass-light)',
-        }}>
-          <div className="user-avatar" style={{ width: '36px', height: '36px', fontSize: '0.8rem' }}>
-            {user.firstName[0]}{user.lastName[0]}
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{
-              fontSize: '0.85rem', fontWeight: 600,
-              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-            }}>
-              {user.firstName} {user.lastName}
-            </div>
-            <div style={{
-              fontSize: '0.7rem', color: 'var(--color-text-muted)',
-              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-            }}>
-              {user.company?.name}
-            </div>
-          </div>
-          <button
-            onClick={logout}
-            className="btn-ghost"
-            style={{ padding: '4px 8px', fontSize: '1rem' }}
-            title="Déconnexion"
-          >
-            🚪
-          </button>
-        </div>
-      </div>
+      {/* User profile Menu (Popover) */}
+      <hr className="border-t-2 border-[#00ff99] my-4 shadow-[0_0_15px_#00ff99,0_0_30px_#00ff99,0_0_45px_#00ff99]" />
+      <UserProfileMenu />
     </aside>
   );
 }
