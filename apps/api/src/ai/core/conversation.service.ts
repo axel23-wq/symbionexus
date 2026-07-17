@@ -14,24 +14,32 @@ export class ConversationService {
     content: string,
     userId?: string
   ): Promise<Message> {
+    this.logger.debug(`Creating message for conversation ${conversationId}, userId: ${userId}, role: ${role}`);
+
     // Create conversation if it doesn't exist
     let conversation = await this.prisma.conversation.findUnique({
       where: { id: conversationId },
     });
 
     if (!conversation && userId) {
-      conversation = await this.prisma.conversation.create({
-        data: {
-          id: conversationId,
-          userId,
-          module: 'general',
-        },
-      });
-      this.logger.debug(`Created new conversation: ${conversationId}`);
+      try {
+        conversation = await this.prisma.conversation.create({
+          data: {
+            id: conversationId,
+            userId,
+            module: 'general',
+          },
+        });
+        this.logger.log(`Created new conversation: ${conversationId} for user: ${userId}`);
+      } catch (error) {
+        this.logger.error(`Failed to create conversation: ${error}`);
+        throw error;
+      }
     }
 
     if (!conversation) {
-      throw new Error(`Conversation ${conversationId} not found`);
+      this.logger.error(`Conversation ${conversationId} not found and userId not provided`);
+      throw new Error(`Conversation ${conversationId} not found and cannot create without userId`);
     }
 
     const message = await this.prisma.conversationMessage.create({
@@ -74,7 +82,13 @@ export class ConversationService {
   async getConversation(conversationId: string) {
     return this.prisma.conversation.findUnique({
       where: { id: conversationId },
-      include: { messages: { take: 20, orderBy: { createdAt: 'asc' } } },
+      include: {
+        messages: {
+          take: 20,
+          orderBy: { createdAt: 'asc' },
+          select: { id: true, conversationId: true, role: true, content: true, createdAt: true }
+        }
+      },
     });
   }
 }
