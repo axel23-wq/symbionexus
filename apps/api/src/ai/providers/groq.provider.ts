@@ -3,7 +3,7 @@ import { AIProvider, ChatOptions } from './provider.interface';
 
 @Injectable()
 export class GroqProvider implements AIProvider {
-  private model = 'llama-3.1-70b-versatile'; // Updated from deprecated mixtral
+  private model = 'llama-3.2-1b-preview'; // Stable free model
   private logger = new Logger(GroqProvider.name);
   private apiKey: string;
   private baseUrl = 'https://api.groq.com/openai/v1';
