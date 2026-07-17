@@ -2,7 +2,14 @@ import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server } from 'socket.io';
 
 // Diffusion temps réel des décaissements + maj wallet (même serveur Socket.io partagé).
-@WebSocketGateway({ cors: { origin: '*' } })
+@WebSocketGateway({
+  cors: {
+    origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:3001'],
+    credentials: true,
+    methods: ['GET', 'POST'],
+  },
+  transports: ['websocket', 'polling'],
+})
 export class PaymentsGateway {
   @WebSocketServer() server: Server;
 
