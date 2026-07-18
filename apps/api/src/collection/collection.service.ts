@@ -103,7 +103,7 @@ export class CollectionService {
   /** CollectorAssigned : assigne le 1er transporteur disponible (MVP ; nearest = increment 2). */
   async assign(id: string) {
     const req = await this.get(id);
-    const collector = await this.prisma.user.findFirst({ where: { role: 'TRANSPORTER' }, select: { id: true } });
+    const collector = await this.prisma.user.findFirst({ where: { role: { name: 'TRANSPORTER' } }, select: { id: true } });
     const updated = await this.prisma.collectionRequest.update({
       where: { id }, data: { status: 'ASSIGNED', collectorUserId: collector?.id ?? null },
     });

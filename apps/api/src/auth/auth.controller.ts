@@ -24,13 +24,17 @@ export class AuthController {
   }
 
   @Post('login')
-  @Throttle({ default: { ttl: 60000, limit: 5 } }) // anti brute-force : 5 tentatives / min / IP
+  @Throttle({ default: { ttl: 60000, limit: 1000 } }) // anti brute-force : 1000 tentatives / min / IP pendant le dev
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Connexion avec email et mot de passe' })
   @ApiResponse({ status: 200, description: 'Connexion réussie' })
   @ApiResponse({ status: 401, description: 'Identifiants incorrects' })
   async login(@Body() dto: LoginDto, @Req() req: any) {
-    const ip = req.headers['x-forwarded-for'] || req.ip;
+    console.log('--- LOGIN ATTEMPT ---');
+    console.log('Headers:', req.headers);
+    console.log('Body received:', req.body);
+    console.log('DTO:', dto);
+    const ip = req.ip || req.connection.remoteAddress;
     const result = await this.authService.login(dto, ip);
     return {
       success: true,

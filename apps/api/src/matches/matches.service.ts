@@ -32,7 +32,7 @@ export class MatchesService {
     const buyerCompanies = await this.prisma.company.findMany({
       where: {
         id: { not: listing.companyId },
-        users: { some: { role: 'BUYER' } },
+        users: { some: { role: { name: 'BUYER' } } },
         kybStatus: 'VERIFIED',
       },
     });

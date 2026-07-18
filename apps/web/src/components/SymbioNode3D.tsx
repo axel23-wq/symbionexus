@@ -86,18 +86,20 @@ function Scene({ interactive, motion, quality }: BlobProps) {
       <ambientLight intensity={0.5} />
       {/* Néon cyan */}
       <pointLight position={[5, 3, 4]} intensity={40} color="#22d3ee" distance={25} />
-      {/* Néon violet/magenta */}
-      <pointLight position={[-5, -2, 3]} intensity={40} color="#a855f7" distance={25} />
+      {/* Néon cyan */}
+      <pointLight position={[-5, -2, 3]} intensity={40} color="#06b6d4" distance={25} />
       <pointLight position={[0, 4, -2]} intensity={15} color="#10b981" distance={20} />
 
       <Suspense fallback={null}>
         <Blob interactive={interactive} motion={motion} quality={quality} />
         {/* Environnement procédural (reflets premium, SANS HDR distant = hors-ligne OK) */}
-        <Environment resolution={quality.resolution}>
-          <Lightformer form="circle" intensity={3} color="#22d3ee" position={[4, 3, 3]} scale={5} />
-          <Lightformer form="circle" intensity={3} color="#a855f7" position={[-4, -2, 2]} scale={5} />
-          <Lightformer form="ring" intensity={1.4} color="#ffffff" position={[0, 0, -4]} scale={7} />
-          <Lightformer form="rect" intensity={1} color="#0d9488" position={[0, -4, 1]} scale={6} />
+        <Environment resolution={256}>
+          <group rotation={[-Math.PI / 3, 0, 1]}>
+            <Lightformer form="circle" intensity={4} rotation-x={Math.PI / 2} position={[0, 5, -9]} scale={2} />
+            <Lightformer form="circle" intensity={2} rotation-y={Math.PI / 2} position={[-5, 1, -1]} scale={2} />
+            <Lightformer form="circle" intensity={2} rotation-y={Math.PI / 2} position={[5, 1, -1]} scale={2} />
+            <Lightformer form="circle" intensity={3} color="#06b6d4" position={[-4, -2, 2]} scale={5} />
+          </group>
         </Environment>
       </Suspense>
     </>

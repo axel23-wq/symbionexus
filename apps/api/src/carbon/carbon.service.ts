@@ -23,6 +23,26 @@ export class CarbonService {
   constructor(private prisma: PrismaService) {}
 
   /**
+   * Estime l'empreinte carbone (CO₂) du transport en fonction de la distance, du véhicule et du poids.
+   * Cette méthode est utilisée par l'IA Matchmaking pour pénaliser les trajets longs.
+   * Retourne le CO₂ estimé en kilogrammes.
+   */
+  estimateTransportCO2(distanceKm: number, vehicleType: 'truck' | 'van' | 'pickup' = 'truck', weightKg: number): number {
+    const weightTonnes = weightKg / 1000;
+    
+    // Facteurs d'émission typiques (kg CO2 / tonne-km)
+    // Source: ADEME (moyennes simplifiées pour l'exemple)
+    const emissionFactors = {
+      truck: 0.08,  // Camion lourd (plus efficient par tonne)
+      van: 0.15,    // Fourgonnette
+      pickup: 0.25  // Pick-up (moins efficient)
+    };
+
+    const factor = emissionFactors[vehicleType] || emissionFactors.truck;
+    return Math.round((distanceKm * weightTonnes * factor) * 100) / 100;
+  }
+
+  /**
    * Calculate CO₂ avoided and generate carbon credit for a confirmed delivery
    */
   async generateCreditFromPassport(passportId: string) {

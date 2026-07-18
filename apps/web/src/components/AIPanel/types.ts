@@ -13,4 +13,5 @@ export interface AIPanelState {
   isLoading: boolean;
   conversationId: string;
   selectedModule?: string;
+  demoMode?: boolean;
 }

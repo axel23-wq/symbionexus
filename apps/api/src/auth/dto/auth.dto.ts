@@ -18,6 +18,10 @@ export class LoginDto {
   @IsString()
   @MinLength(6)
   password: string;
+
+  @ApiPropertyOptional({ example: true, description: 'Se souvenir pendant 30 jours' })
+  @IsOptional()
+  rememberMe?: boolean;
 }
 
 export class RegisterDto {

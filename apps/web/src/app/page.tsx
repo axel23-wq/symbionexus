@@ -43,7 +43,7 @@ const MATERIAL_CATEGORIES = [
   { name: 'Plastiques', icon: '♻️', color: '#3b82f6' },
   { name: 'Biomasse', icon: '🌿', color: '#10b981' },
   { name: 'Chimiques', icon: '🧪', color: '#ef4444' },
-  { name: 'Textile', icon: '🧵', color: '#8b5cf6' },
+  { name: 'Textile', icon: '🧵', color: '#0ea5e9' },
   { name: 'BTP', icon: '🏗️', color: '#78716c' },
   { name: 'Verre', icon: '🔬', color: '#06b6d4' },
   { name: 'Papier', icon: '📄', color: '#a3e635' },

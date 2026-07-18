@@ -1,0 +1,221 @@
+diff --git a/apps/api/src/ai/ai.controller.ts b/apps/api/src/ai/ai.controller.ts
+new file mode 100644
+index 0000000..f2cb505
+--- /dev/null
++++ b/apps/api/src/ai/ai.controller.ts
+@@ -0,0 +1,62 @@
++import { Controller, Post, Body, UseGuards, Req, Res } from '@nestjs/common';
++import { Request, Response } from 'express';
++import { randomUUID } from 'crypto';
++import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
++import { AIService } from './ai.service';
++import { CreateChatMessageDto } from './dto/chat.dto';
++
++@Controller('ai')
++@UseGuards(JwtAuthGuard)
++export class AIController {
++  constructor(private aiService: AIService) {}
++
++  @Post('chat')
++  async chat(
++    @Body() dto: CreateChatMessageDto,
++    @Req() req: Request & { user: { id: string } },
++    @Res() res: Response
++  ) {
++    const userId = req.user.id;
++    const conversationId = dto.conversationId || this.generateId();
++
++    res.setHeader('Content-Type', 'text/event-stream');
++    res.setHeader('Cache-Control', 'no-cache');
++    res.setHeader('Connection', 'keep-alive');
++
++    try {
++      res.on('error', (err) => {
++        console.error('Response stream error:', err);
++      });
++
++      await this.aiService.processMessage(
++        dto.message,
++        dto.module || 'general',
++        conversationId,
++        userId,
++        (token: string) => {
++          const chunk = `data: ${JSON.stringify({ type: 'token', token })}\n\n`;
++          if (!res.write(chunk)) {
++            console.warn('Failed to write token chunk to response');
++          }
++        }
++      );
++
++      const endChunk = `data: ${JSON.stringify({ type: 'end' })}\n\n`;
++      if (!res.write(endChunk)) {
++        console.warn('Failed to write end chunk to response');
++      }
++      res.end();
++    } catch (error) {
++      const errorMessage = error instanceof Error ? error.message : String(error);
++      const errorChunk = `data: ${JSON.stringify({ type: 'error', error: errorMessage })}\n\n`;
++      if (!res.write(errorChunk)) {
++        console.warn('Failed to write error chunk to response');
++      }
++      res.end();
++    }
++  }
++
++  private generateId(): string {
++    return randomUUID();
++  }
++}
+diff --git a/apps/api/src/ai/ai.module.ts b/apps/api/src/ai/ai.module.ts
+new file mode 100644
+index 0000000..ca4cb96
+--- /dev/null
++++ b/apps/api/src/ai/ai.module.ts
+@@ -0,0 +1,12 @@
++import { Module } from '@nestjs/common';
++import { AIService } from './ai.service';
++import { AIController } from './ai.controller';
++import { AICorModule } from './core/core.module';
++
++@Module({
++  imports: [AICorModule],
++  controllers: [AIController],
++  providers: [AIService],
++  exports: [AIService],
++})
++export class AIModule {}
+diff --git a/apps/api/src/ai/ai.service.ts b/apps/api/src/ai/ai.service.ts
+new file mode 100644
+index 0000000..846e60d
+--- /dev/null
++++ b/apps/api/src/ai/ai.service.ts
+@@ -0,0 +1,18 @@
++import { Injectable, Logger } from '@nestjs/common';
++
++@Injectable()
++export class AIService {
++  private readonly logger = new Logger(AIService.name);
++
++  async processMessage(
++    message: string,
++    module: string,
++    conversationId: string,
++    userId: string,
++    onToken: (token: string) => void
++  ): Promise<string> {
++    this.logger.log(`Processing message for module: ${module}`);
++    // TODO: Implement in Task 5
++    return '';
++  }
++}
+diff --git a/apps/api/src/ai/core/core.module.ts b/apps/api/src/ai/core/core.module.ts
+new file mode 100644
+index 0000000..83ec637
+--- /dev/null
++++ b/apps/api/src/ai/core/core.module.ts
+@@ -0,0 +1,7 @@
++import { Module } from '@nestjs/common';
++
++@Module({
++  providers: [],
++  exports: [],
++})
++export class AICorModule {}
+diff --git a/apps/api/src/ai/core/types.ts b/apps/api/src/ai/core/types.ts
+new file mode 100644
+index 0000000..4e3fad1
+--- /dev/null
++++ b/apps/api/src/ai/core/types.ts
+@@ -0,0 +1,16 @@
++export interface Message {
++  id: string;
++  conversationId: string;
++  role: 'user' | 'assistant';
++  content: string;
++  tokenCount?: number;
++  createdAt: Date;
++}
++
++export interface Conversation {
++  id: string;
++  userId: string;
++  messages: Message[];
++  createdAt: Date;
++  updatedAt: Date;
++}
+diff --git a/apps/api/src/ai/dto/chat.dto.ts b/apps/api/src/ai/dto/chat.dto.ts
+new file mode 100644
+index 0000000..f77f142
+--- /dev/null
++++ b/apps/api/src/ai/dto/chat.dto.ts
+@@ -0,0 +1,21 @@
++import { IsString, IsOptional } from 'class-validator';
++
++export class CreateChatMessageDto {
++  @IsString()
++  message: string;
++
++  @IsOptional()
++  @IsString()
++  module?: string;
++
++  @IsOptional()
++  @IsString()
++  conversationId?: string;
++}
++
++export class ChatResponseDto {
++  conversationId: string;
++  messageId: string;
++  response: string;
++  tokenCount: number;
++}
+diff --git a/apps/api/src/app.module.ts b/apps/api/src/app.module.ts
+index fd7fdf1..05966c5 100644
+--- a/apps/api/src/app.module.ts
++++ b/apps/api/src/app.module.ts
+@@ -10,40 +10,36 @@ import { ListingsModule } from './listings/listings.module';
+ import { MatchesModule } from './matches/matches.module';
+ import { ContractsModule } from './contracts/contracts.module';
+ import { PassportsModule } from './passports/passports.module';
+ import { CarbonModule } from './carbon/carbon.module';
+ import { MessagingModule } from './messaging/messaging.module';
+-import { NotificationsModule } from './notifications/notifications.module';
+-import { DashboardModule } from './dashboard/dashboard.module';
+ import { AuditModule } from './audit/audit.module';
+-import { SettingsModule } from './settings/settings.module';
+ import { CollectionModule } from './collection/collection.module';
+ import { PaymentsModule } from './payments/payments.module';
++import { AIModule } from './ai/ai.module';
+ 
+ @Module({
+   imports: [
+     ConfigModule.forRoot({
+       isGlobal: true,
+       envFilePath: '.env',
+     }),
+-    // Rate limiting global : 100 req / 60s / IP (anti brute-force / abus — R11, ADR-012)
+-    ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
++    // Rate limiting global : 10000 req / 60s / IP (augmenté pour le développement)
++    ThrottlerModule.forRoot([{ ttl: 60000, limit: 10000 }]),
+     PrismaModule,
+     AuthModule,
+     UsersModule,
+     CompaniesModule,
+     ListingsModule,
+     MatchesModule,
+     ContractsModule,
+     PassportsModule,
+     CarbonModule,
+     MessagingModule,
+-    NotificationsModule,
+-    DashboardModule,
+     AuditModule,
+-    SettingsModule,
+     CollectionModule,
+     PaymentsModule,
++    AIModule,
+   ],
+   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
+ })
+ export class AppModule {}

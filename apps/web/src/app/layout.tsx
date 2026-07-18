@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
+import NotificationToast from "@/components/NotificationToast";
+import ExpoGoButton from "@/components/ExpoGoButton";
 
 export const metadata: Metadata = {
   title: "SymbioNexus — Marketplace Industrielle de l'Économie Circulaire",
@@ -38,8 +40,10 @@ export default function RootLayout({
       <body>
         <AuthProvider>
           <ServiceWorkerRegister />
+          <NotificationToast />
           <div className="bg-mesh" />
           {children}
+          <ExpoGoButton />
         </AuthProvider>
       </body>
     </html>

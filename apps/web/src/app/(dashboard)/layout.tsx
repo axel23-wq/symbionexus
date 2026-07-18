@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
 import InstallPWAButton from '@/components/InstallPWAButton';
+import AIPanel from '@/components/AIPanel/AIPanel';
 import { LanguageProvider } from '@/lib/i18n/LanguageProvider';
 import { ThemeProvider } from '@/lib/theme/ThemeProvider';
 import { QueryProvider } from '@/lib/QueryProvider';
@@ -47,6 +48,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {children}
             </main>
             <InstallPWAButton />
+            <AIPanel />
           </div>
         </QueryProvider>
       </LanguageProvider>

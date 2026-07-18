@@ -51,17 +51,17 @@ export class AuthService {
           passwordHash,
           firstName: dto.firstName,
           lastName: dto.lastName,
-          role: dto.role,
+          roleId: undefined, // Requires explicit migration of dto.role to roleId
           companyId: company.id,
         },
-        include: { company: true },
+        include: { company: true, role: true },
       });
 
       return user;
     });
 
     // Generate tokens
-    const tokens = await this.generateTokens(result.id, result.email, result.role);
+    const tokens = await this.generateTokens(result.id, result.email, (result as any).role?.name || 'SELLER', false, result.companyId);
 
     return {
       ...tokens,
@@ -75,7 +75,7 @@ export class AuthService {
   async login(dto: LoginDto, ip?: string) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
-      include: { company: true },
+      include: { company: true, role: true },
     });
 
     if (!user) {
@@ -92,7 +92,8 @@ export class AuthService {
       throw new UnauthorizedException('Ce compte a été désactivé');
     }
 
-    const tokens = await this.generateTokens(user.id, user.email, user.role);
+    const rememberMe = dto.rememberMe || false;
+    const tokens = await this.generateTokens(user.id, user.email, (user as any).role?.name || 'SELLER', rememberMe, user.companyId);
     await this.audit.log(user.id, 'LOGIN', ip, 'SUCCESS');
 
     return {
@@ -112,14 +113,14 @@ export class AuthService {
 
       const user = await this.prisma.user.findUnique({
         where: { id: payload.sub },
-        include: { company: true },
+        include: { company: true, role: true },
       });
 
       if (!user || !user.isActive) {
         throw new UnauthorizedException('Token invalide');
       }
 
-      const tokens = await this.generateTokens(user.id, user.email, user.role);
+      const tokens = await this.generateTokens(user.id, user.email, (user as any).role?.name || 'SELLER', false, user.companyId);
       return {
         ...tokens,
         user: this.sanitizeUser(user),
@@ -135,7 +136,7 @@ export class AuthService {
   async getProfile(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      include: { company: true },
+      include: { company: true, role: true },
     });
     if (!user) {
       throw new UnauthorizedException('Utilisateur non trouvé');
@@ -145,17 +146,20 @@ export class AuthService {
 
   // ============ Private helpers ============
 
-  private async generateTokens(userId: string, email: string, role: string) {
-    const payload = { sub: userId, email, role };
+  private async generateTokens(userId: string, email: string, role: string, rememberMe = false, companyId?: string) {
+    const payload = { sub: userId, email, role, companyId };
+
+    const accessExpiry = rememberMe ? '30d' : '15m';
+    const refreshExpiry = rememberMe ? '60d' : '7d';
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
         secret: process.env.JWT_SECRET || 'jwt-secret-dev',
-        expiresIn: '15m',
+        expiresIn: accessExpiry,
       }),
       this.jwtService.signAsync(payload, {
         secret: process.env.JWT_REFRESH_SECRET || 'refresh-secret-dev',
-        expiresIn: '7d',
+        expiresIn: refreshExpiry,
       }),
     ]);
 
@@ -163,7 +167,7 @@ export class AuthService {
   }
 
   private sanitizeUser(user: any) {
-    const { passwordHash, ...sanitized } = user;
-    return sanitized;
+    const { passwordHash, role, ...sanitized } = user;
+    return { ...sanitized, role: role?.name || 'SELLER' };
   }
 }

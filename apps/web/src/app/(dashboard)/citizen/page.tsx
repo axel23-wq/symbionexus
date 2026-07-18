@@ -16,7 +16,7 @@ const SOCKET_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/ap
 
 const STATUS_COLOR: Record<string, string> = {
   SUBMITTED: '#94a3b8', ASSIGNED: '#3b82f6', EN_ROUTE: '#f59e0b',
-  PICKED_UP: '#8b5cf6', VALIDATED: '#14b8a6', PAID: '#10b981', REJECTED: '#ef4444',
+  PICKED_UP: '#0ea5e9', VALIDATED: '#14b8a6', PAID: '#10b981', REJECTED: '#ef4444',
 };
 const PAYOUT_COLOR: Record<string, string> = {
   PENDING: '#94a3b8', PROCESSING: '#f59e0b', CONFIRMED: '#10b981', FAILED: '#ef4444',

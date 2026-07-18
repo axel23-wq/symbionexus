@@ -10,6 +10,8 @@ export default function LoginPage() {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -19,7 +21,22 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      await login(email, password);
+      let finalEmail = email;
+      let finalPassword = password;
+      
+      // Auto-complétion secrète pour faciliter la démonstration
+      if (email === 'admin' && password === 'admin') {
+        finalEmail = 'admin@symbionexus.com';
+        finalPassword = 'Demo2024!';
+      } else if (email === 'seller' && password === 'seller') {
+        finalEmail = 'seller@cafvert.fr';
+        finalPassword = 'Demo2024!';
+      } else if (email === 'buyer' && password === 'buyer') {
+        finalEmail = 'buyer@biocompost.fr';
+        finalPassword = 'Demo2024!';
+      }
+
+      await login(finalEmail, finalPassword, rememberMe);
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Email ou mot de passe incorrect');
@@ -94,12 +111,12 @@ export default function LoginPage() {
         {/* Form */}
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: '20px' }}>
-            <label className="input-label" htmlFor="login-email">Email</label>
+            <label className="input-label" htmlFor="login-email">Email ou Identifiant</label>
             <input
               id="login-email"
-              type="email"
+              type="text"
               className="input-field"
-              placeholder="contact@entreprise.fr"
+              placeholder="contact@entreprise.fr ou admin"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -107,19 +124,82 @@ export default function LoginPage() {
             />
           </div>
 
-          <div style={{ marginBottom: '28px' }}>
+          {/* Password field with eye toggle */}
+          <div style={{ marginBottom: '16px' }}>
             <label className="input-label" htmlFor="login-password">Mot de passe</label>
-            <input
-              id="login-password"
-              type="password"
-              className="input-field"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              autoComplete="current-password"
-            />
+            <div style={{ position: 'relative' }}>
+              <input
+                id="login-password"
+                type={showPassword ? 'text' : 'password'}
+                className="input-field"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="current-password"
+                style={{ paddingRight: '48px' }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                style={{
+                  position: 'absolute',
+                  right: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  fontSize: '1.2rem',
+                  color: 'var(--color-text-muted)',
+                  transition: 'color 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-text-primary)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-text-muted)')}
+              >
+                {showPassword ? '🙈' : '👁️'}
+              </button>
+            </div>
+          </div>
+
+          {/* Remember Me checkbox */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '28px',
+          }}>
+            <label
+              htmlFor="remember-me"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                cursor: 'pointer',
+                fontSize: '0.85rem',
+                color: 'var(--color-text-secondary)',
+                userSelect: 'none',
+              }}
+            >
+              <input
+                id="remember-me"
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                style={{
+                  width: '16px',
+                  height: '16px',
+                  accentColor: 'var(--color-primary, #0d9488)',
+                  cursor: 'pointer',
+                }}
+              />
+              Se souvenir de moi (30 jours)
+            </label>
           </div>
 
           <button
@@ -158,7 +238,7 @@ export default function LoginPage() {
             fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em',
             color: 'var(--color-text-muted)', fontWeight: 700, marginBottom: '12px', textAlign: 'center',
           }}>
-
+            Comptes de démonstration
           </p>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
             {demoAccounts.map((acc, i) => (

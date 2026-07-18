@@ -72,10 +72,10 @@ class ApiClient {
   }
 
   // Auth
-  async login(email: string, password: string) {
+  async login(email: string, password: string, rememberMe = false) {
     return this.request<any>('/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, rememberMe }),
     });
   }
 
@@ -111,6 +111,25 @@ class ApiClient {
     });
   }
 
+  // Directory
+  async searchDirectory(params: Record<string, any>) {
+    const qs = new URLSearchParams();
+    for (const [k, v] of Object.entries(params)) {
+      if (v !== undefined && v !== null && v !== '') {
+        if (Array.isArray(v)) {
+          v.forEach(val => qs.append(k, val));
+        } else {
+          qs.append(k, String(v));
+        }
+      }
+    }
+    return this.request<any>(`/directory?${qs.toString()}`);
+  }
+
+  async getDirectoryCompany(id: string) {
+    return this.request<any>(`/directory/${id}`);
+  }
+
   async updateListing(id: string, data: any) {
     return this.request<any>(`/listings/${id}`, {
       method: 'PUT',
@@ -127,6 +146,10 @@ class ApiClient {
   }
 
   // Matches
+  async computeAiMatch(listingId: string) {
+    return this.request<any>(`/ai/match/${listingId}`, { method: 'POST' });
+  }
+
   async computeMatches(listingId: string) {
     return this.request<any>(`/matches/compute/${listingId}`, { method: 'POST' });
   }
@@ -197,6 +220,11 @@ class ApiClient {
 
   async getAdminDashboard() {
     return this.request<any>('/dashboard/admin');
+  }
+
+  // Analytics
+  async getCompanyAnalytics() {
+    return this.request<any>('/analytics/company');
   }
 
   // Messages
@@ -331,6 +359,26 @@ class ApiClient {
     URL.revokeObjectURL(url);
   }
 
+  // Market Intelligence Engine
+  async getMIShortages() {
+    return this.request<any>('/market-intelligence/shortages');
+  }
+  async getMIPredictions() {
+    return this.request<any>('/market-intelligence/predictions');
+  }
+  async getMIFraudDetection() {
+    return this.request<any>('/market-intelligence/fraud');
+  }
+  async getMICapacityBalancing() {
+    return this.request<any>('/market-intelligence/capacity');
+  }
+  async getMITrustScores() {
+    return this.request<any>('/market-intelligence/trust-scores');
+  }
+  async getMIGlobal() {
+    return this.request<any>('/market-intelligence/global');
+  }
+
   // Collecte citoyenne temps réel (flux réel : DB + events + wallet)
   async submitCollection(dto: { materialCategory: string; declaredWeightKg: number; phone?: string; latitude?: number; longitude?: number }) {
     return this.request<any>('/collection', { method: 'POST', body: JSON.stringify(dto) });
@@ -370,6 +418,10 @@ class ApiClient {
   // Outil DEV temporaire : simule le webhook prestataire (retiré en prod)
   async devConfirmPayout(providerRef: string, status: 'CONFIRMED' | 'FAILED' = 'CONFIRMED') {
     return this.request<any>('/payments/dev/confirm', { method: 'POST', body: JSON.stringify({ providerRef, status }) });
+  }
+  // Logistics GPS
+  async getLogisticsTransports() {
+    return this.request<any>('/logistics/active-transports');
   }
 }
 

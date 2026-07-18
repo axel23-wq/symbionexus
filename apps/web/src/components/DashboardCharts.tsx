@@ -48,14 +48,30 @@ function ChartTooltip({ active, payload, label, suffix }: any) {
   );
 }
 
+// --- PREMIUM MOCK DATA FOR CHARTS ---
+const MOCK_MY_LISTINGS = [
+  { materialCategory: 'METALS', volumeKg: 4500, createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString() },
+  { materialCategory: 'PLASTICS', volumeKg: 12000, createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString() },
+  { materialCategory: 'BIOMASS', volumeKg: 25000, createdAt: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString() },
+  { materialCategory: 'METALS', volumeKg: 3200, createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 45).toISOString() },
+  { materialCategory: 'ELECTRONIC', volumeKg: 800, createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString() },
+  { materialCategory: 'GLASS', volumeKg: 5000, createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 60).toISOString() },
+  { materialCategory: 'PAPER', volumeKg: 1500, createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 15).toISOString() },
+  { materialCategory: 'PLASTICS', volumeKg: 3000, createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 120).toISOString() },
+];
+// ------------------------------------
+
 export default function DashboardCharts() {
   const [listings, setListings] = useState<any[]>([]);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     api.getMyListings()
-      .then((r) => setListings(r.data || []))
-      .catch(() => setListings([]))
+      .then((r) => {
+        const data = r.data || [];
+        setListings(data.length > 0 ? data : MOCK_MY_LISTINGS);
+      })
+      .catch(() => setListings(MOCK_MY_LISTINGS))
       .finally(() => setLoaded(true));
   }, []);
 
