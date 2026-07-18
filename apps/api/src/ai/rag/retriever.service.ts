@@ -22,17 +22,17 @@ export class RetrieverService {
     });
 
     const scored = chunks
-      .map((chunk) => ({
+      .map((chunk: any) => ({
         ...chunk,
         score: this.scoreChunk(chunk.content, queryTerms),
       }))
-      .filter((c) => c.score > 0)
-      .sort((a, b) => b.score - a.score)
+      .filter((c: any) => c.score > 0)
+      .sort((a: any, b: any) => b.score - a.score)
       .slice(0, topK);
 
     this.logger.debug(`Retrieved ${scored.length} relevant chunks`);
 
-    return scored.map((c) => ({
+    return scored.map((c: any) => ({
       filePath: c.filePath,
       content: c.content,
       startLine: c.startLine,

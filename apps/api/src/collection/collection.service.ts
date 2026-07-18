@@ -144,7 +144,7 @@ export class CollectionService {
     if (req.status !== 'VALIDATED') throw new BadRequestException('La collecte doit être validée (pesée) avant paiement.');
     const amount = req.finalValue ?? req.estimatedValue;
 
-    const result = await this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx: any) => {
       const wallet = await tx.wallet.upsert({
         where: { userId: req.userId },
         create: { userId: req.userId, balance: amount },
@@ -190,10 +190,10 @@ export class CollectionService {
       this.prisma.payout.aggregate({ _sum: { amount: true }, where: { status: 'CONFIRMED' } }),
       this.prisma.systemEvent.findMany({ orderBy: { createdAt: 'desc' }, take: 30 }),
     ]);
-    const co2Total = Math.round(carbonEvents.reduce((s, e: any) => s + (e.payload?.co2Kg || 0), 0) * 100) / 100;
+    const co2Total = Math.round(carbonEvents.reduce((s: number, e: any) => s + (e.payload?.co2Kg || 0), 0) * 100) / 100;
     return {
-      collectionsByStatus: byStatus.map((b) => ({ status: b.status, count: b._count })),
-      collectionsTotal: byStatus.reduce((s, b) => s + b._count, 0),
+      collectionsByStatus: byStatus.map((b: any) => ({ status: b.status, count: b._count })),
+      collectionsTotal: byStatus.reduce((s: number, b: any) => s + b._count, 0),
       creditedTotal: paidAgg._sum.amount || 0,
       payoutConfirmedTotal: payoutAgg._sum.amount || 0,
       co2Total,

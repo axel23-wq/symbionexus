@@ -128,14 +128,14 @@ export class CarbonService {
       where: { companyId },
     });
 
-    const totalCO2Avoided = credits.reduce((sum, c) => sum + c.co2AvoidedTonnes, 0);
-    const totalTrees = credits.reduce((sum, c) => sum + c.equivalentTrees, 0);
-    const totalCarKm = credits.reduce((sum, c) => sum + c.equivalentCarKm, 0);
+    const totalCO2Avoided = credits.reduce((sum: number, c: any) => sum + c.co2AvoidedTonnes, 0);
+    const totalTrees = credits.reduce((sum: number, c: any) => sum + c.equivalentTrees, 0);
+    const totalCarKm = credits.reduce((sum: number, c: any) => sum + c.equivalentCarKm, 0);
     const totalCredits = credits.length;
 
     // Monthly breakdown
     const monthlyData: Record<string, number> = {};
-    credits.forEach((credit) => {
+    credits.forEach((credit: any) => {
       const month = credit.createdAt.toISOString().substring(0, 7); // YYYY-MM
       monthlyData[month] = (monthlyData[month] || 0) + credit.co2AvoidedTonnes;
     });
@@ -266,13 +266,13 @@ export class CarbonService {
    */
   async getPlatformStats() {
     const credits = await this.prisma.carbonCredit.findMany();
-    const totalCO2 = credits.reduce((sum, c) => sum + c.co2AvoidedTonnes, 0);
+    const totalCO2 = credits.reduce((sum: number, c: any) => sum + c.co2AvoidedTonnes, 0);
 
     return {
       totalCO2Avoided: Math.round(totalCO2 * 100) / 100,
       totalCreditsIssued: credits.length,
       totalEstimatedValue: Math.round(totalCO2 * 80 * 100) / 100,
-      totalEquivalentTrees: credits.reduce((sum, c) => sum + c.equivalentTrees, 0),
+      totalEquivalentTrees: credits.reduce((sum: number, c: any) => sum + c.equivalentTrees, 0),
     };
   }
 }

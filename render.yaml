@@ -7,7 +7,7 @@ services:
     plan: free
     rootDir: apps/api
     buildCommand: npm install --include=dev && npx prisma generate && npm run build
-    startCommand: npm run start:prod
+    startCommand: node dist/main.js
     healthCheckPath: /api/docs
     envVars:
       - key: DATABASE_URL          # URL PostgreSQL Neon
