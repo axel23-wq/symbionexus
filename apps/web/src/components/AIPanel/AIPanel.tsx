@@ -4,6 +4,8 @@ import { useEffect, useReducer, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import ChatWindow from './ChatWindow';
 import MessageInput from './MessageInput';
+import FileUploadZone from './FileUploadZone';
+import VoiceRecorder from './VoiceRecorder';
 import { AIPanelState, Message } from './types';
 import { useAIStreamConnection } from './useAIStreamConnection';
 import { detectModuleFromPath } from '@/lib/module-detector';
@@ -35,6 +37,12 @@ const MODULE_SUGGESTIONS: { [key: string]: string[] } = {
     'Marketplace Matchmaking Insights',
   ],
 };
+
+interface UploadedFile {
+  file: File;
+  preview?: string;
+  type: 'image' | 'video' | 'audio' | 'document' | 'other';
+}
 
 const initialState: AIPanelState = {
   isOpen: false,
@@ -105,8 +113,10 @@ export default function AIPanel() {
     startPos: { x: 0, y: 0 },
   });
   const [panelPos, setPanelPos] = useState({ x: 0, y: 0 });
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [demoMode, setDemoMode] = useState(false);
+  const [showFileUpload, setShowFileUpload] = useState(false);
+  const [voiceRecordingBlob, setVoiceRecordingBlob] = useState<Blob | null>(null);
 
   useEffect(() => {
     const module = detectModuleFromPath(pathname);
@@ -230,21 +240,25 @@ export default function AIPanel() {
     dispatch({ type: 'SET_INPUT', payload: question });
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setSelectedFiles(prev => [...prev, ...Array.from(e.target.files!)]);
-    }
+  const handleFilesSelected = (files: Array<{ file: File; preview?: string; type: 'image' | 'video' | 'audio' | 'document' | 'other' }>) => {
+    setUploadedFiles(files as UploadedFile[]);
   };
 
   const removeFile = (idx: number) => {
-    setSelectedFiles(prev => prev.filter((_, i) => i !== idx));
+    const updated = uploadedFiles.filter((_, i) => i !== idx);
+    setUploadedFiles(updated);
+  };
+
+  const handleVoiceRecordingComplete = (audioBlob: Blob) => {
+    setVoiceRecordingBlob(audioBlob);
+    dispatch({ type: 'SET_INPUT', payload: '[Voice message attached]' });
   };
 
   const handleToolClick = (tool: string) => {
-    if (['camera', 'video', 'document'].includes(tool)) {
-      fileInputRef.current?.click();
-    } else if (tool === 'microphone') {
-      console.log('Microphone feature coming soon');
+    if (tool === 'microphone') {
+      // Voice recorder is now integrated, this is handled by the component
+    } else if (['camera', 'video', 'document'].includes(tool)) {
+      setShowFileUpload(true);
     }
   };
 
@@ -315,21 +329,46 @@ export default function AIPanel() {
             </div>
           )}
 
-          {/* File Preview */}
-          {selectedFiles.length > 0 && (
+          {/* File Upload Zone Overlay */}
+          {showFileUpload && (
+            <div className={styles['file-upload-overlay']}>
+              <button
+                className={styles['overlay-close']}
+                onClick={() => setShowFileUpload(false)}
+              >
+                ✕
+              </button>
+              <FileUploadZone onFilesSelected={handleFilesSelected} maxSize={100} maxFiles={10} />
+            </div>
+          )}
+
+          {/* File Preview Section */}
+          {uploadedFiles.length > 0 && (
             <div className={styles['file-preview-section']}>
-              <div className={styles['fp-label']}>File Preview</div>
+              <div className={styles['fp-label']}>Files Attached ({uploadedFiles.length})</div>
               <div className={styles['file-thumbs']}>
-                {selectedFiles.map((file, idx) => (
-                  <div key={idx} className={`${styles['thumb']} ${file.type.startsWith('image/') ? styles['img'] : styles['pdf']}`}>
+                {uploadedFiles.map((fileItem, idx) => (
+                  <div key={idx} className={`${styles['thumb']} ${styles[fileItem.type]}`}>
+                    {fileItem.preview ? (
+                      <img src={fileItem.preview} alt="preview" className={styles['thumb-image']} />
+                    ) : (
+                      <span className={styles['thumb-icon']}>
+                        {fileItem.type === 'image' && '🖼️'}
+                        {fileItem.type === 'video' && '🎬'}
+                        {fileItem.type === 'audio' && '🎵'}
+                        {fileItem.type === 'document' && '📄'}
+                        {fileItem.type === 'other' && '📎'}
+                      </span>
+                    )}
                     <span
                       className={styles['thumb-close']}
                       onClick={() => removeFile(idx)}
+                      title="Remove file"
                     >
                       ×
                     </span>
-                    <div className={styles['thumb-content']}>
-                      {file.type.startsWith('image/') ? '🖼️' : '📄'}
+                    <div className={styles['file-size']}>
+                      {(fileItem.file.size / 1024 / 1024).toFixed(2)} MB
                     </div>
                   </div>
                 ))}
@@ -337,9 +376,20 @@ export default function AIPanel() {
             </div>
           )}
 
+          {/* Voice Recorder Section */}
+          <div className={styles['voice-section']}>
+            <VoiceRecorder onRecordingComplete={handleVoiceRecordingComplete} isLoading={state.isLoading} />
+          </div>
+
           {/* Input Bar */}
           <div className={styles['input-bar']}>
-            <button className={styles['round-btn']} title="Add">➕</button>
+            <button
+              className={styles['round-btn']}
+              title="Add files"
+              onClick={() => setShowFileUpload(!showFileUpload)}
+            >
+              📁
+            </button>
             <MessageInput
               value={state.currentInput}
               onChange={(val) => dispatch({ type: 'SET_INPUT', payload: val })}
@@ -351,14 +401,6 @@ export default function AIPanel() {
               ➤
             </button>
           </div>
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            style={{ display: 'none' }}
-            onChange={handleFileSelect}
-          />
         </div>
       )}
     </>
