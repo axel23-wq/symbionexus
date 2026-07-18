@@ -34,6 +34,25 @@ const DEMO_PASSPORT: PassportData = {
 export default function OfficialPassport() {
   const [selectedPassport, setSelectedPassport] = useState<PassportData>(DEMO_PASSPORT);
   const qrCanvasRef = useRef<HTMLCanvasElement>(null);
+  
+  const [showBlockchainModal, setShowBlockchainModal] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyBlockchain = () => {
+    navigator.clipboard.writeText(selectedPassport.blockchainHash);
+    setCopied(true);
+    setShowBlockchainModal(true);
+    setTimeout(() => setCopied(false), 3000);
+  };
+
+  const handleDownloadPdf = () => {
+    setDownloading(true);
+    setTimeout(() => {
+      setDownloading(false);
+      window.print();
+    }, 1500);
+  };
 
   const qrValue = JSON.stringify({
     id: selectedPassport.id,
@@ -146,17 +165,60 @@ export default function OfficialPassport() {
       </div>
 
       {/* Actions */}
-      <div className={styles.actions}>
+      <div className={styles.actions} style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
         <button className={styles.btnPrimary} onClick={() => window.print()}>
-          🖨️ Imprimer le Passeport
+          🖨️ Imprimer
         </button>
-        <button className={styles.btnSecondary} onClick={() => navigator.clipboard.writeText(qrValue)}>
-          📋 Copier l'ID Blockchain
+        <button 
+          className={styles.btnSecondary} 
+          onClick={handleCopyBlockchain}
+          style={{ position: 'relative', overflow: 'hidden' }}
+        >
+          {copied ? '✅ ID Copié avec succès' : '📋 Copier l\'ID Blockchain'}
         </button>
-        <button className={styles.btnSecondary} onClick={() => alert(`Passeport ${selectedPassport.id} téléchargé (simulation)`)}>
-          📥 Télécharger PDF
+        <button 
+          className={styles.btnSecondary} 
+          onClick={handleDownloadPdf}
+          disabled={downloading}
+          style={{ opacity: downloading ? 0.7 : 1 }}
+        >
+          {downloading ? '⏳ Génération du PDF...' : '📥 Télécharger PDF'}
         </button>
       </div>
+
+      {/* Explorer Blockchain Modal Premium */}
+      {showBlockchainModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 12000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(4, 8, 16, 0.85)', backdropFilter: 'blur(10px)' }}>
+          <div style={{ background: '#0a0f1e', border: '1.5px solid #2dd4bf', borderRadius: 24, padding: 32, width: '100%', maxWidth: 520, boxShadow: '0 30px 80px rgba(45, 212, 191, 0.25)' }}>
+            <h3 style={{ fontSize: 22, color: '#2dd4bf', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10, fontWeight: 800 }}>
+              <span>⛓️</span> SymbioNexus Explorer
+            </h3>
+            <div style={{ background: '#020617', padding: 20, borderRadius: 16, marginBottom: 24, fontFamily: 'monospace', color: '#94a3b8', fontSize: 13, wordBreak: 'break-all', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ color: '#fff', marginBottom: 8, fontWeight: 'bold' }}>Transaction Hash copiée :</div>
+              <div style={{ color: '#2dd4bf' }}>{selectedPassport.blockchainHash}</div>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 30, background: 'rgba(255,255,255,0.02)', padding: 20, borderRadius: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
+                <span style={{ color: '#64748b' }}>Statut du réseau</span>
+                <span style={{ color: '#10b981', fontWeight: 800 }}>● En ligne (Immuable)</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
+                <span style={{ color: '#64748b' }}>Contrat Intelligent</span>
+                <span style={{ color: '#e2e8f0', fontWeight: 600 }}>SymbioNexus Core V1</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
+                <span style={{ color: '#64748b' }}>Horodatage Certifié</span>
+                <span style={{ color: '#e2e8f0', fontWeight: 600 }}>{new Date().toLocaleString('fr-FR')}</span>
+              </div>
+            </div>
+
+            <button onClick={() => setShowBlockchainModal(false)} style={{ width: '100%', padding: '14px', background: '#2dd4bf', color: '#000', border: 'none', borderRadius: 12, fontSize: 16, fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s' }}>
+              Fermer l'explorateur
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

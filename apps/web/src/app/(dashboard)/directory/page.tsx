@@ -22,6 +22,7 @@ export default function DirectoryPage() {
   const [isParsing, setIsParsing] = useState(false);
   const [selectedPartnership, setSelectedPartnership] = useState<any | null>(null);
   const [selectedInfo, setSelectedInfo] = useState<{type: 'material'|'service', title: string, company: string} | null>(null);
+  const [selectedCategoryInfo, setSelectedCategoryInfo] = useState<string | null>(null);
 
   const handleSearch = (v: string) => {
     setSearchQuery(v);
@@ -157,15 +158,27 @@ export default function DirectoryPage() {
           </div>
 
           <div style={{ marginBottom: 20 }}>
-            <label style={{ display: 'block', fontSize: 12, color: '#64748b', marginBottom: 8, fontWeight: 600, textTransform: 'uppercase' }}>Catégorie Matière</label>
-            <select 
-              value={materialCategory} 
-              onChange={e => setMaterialCategory(e.target.value)}
-              style={{ width: '100%', padding: '12px 16px', background: '#111c30', border: '1.5px solid #1a2540', borderRadius: 10, color: '#e2e8f0', fontSize: 14 }}
-            >
-              <option value="">Toutes matières</option>
-              {categories.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
+            <label style={{ display: 'block', fontSize: 12, color: '#64748b', marginBottom: 12, fontWeight: 600, textTransform: 'uppercase' }}>Catégorie Matière</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              <button
+                onClick={() => setMaterialCategory('')}
+                style={{ cursor: 'pointer', padding: '8px 12px', fontSize: 12, borderRadius: 8, border: '1px solid #1a2540', background: materialCategory === '' ? '#38bdf8' : '#111c30', color: materialCategory === '' ? '#000' : '#e2e8f0', fontWeight: 600, transition: 'all 0.2s', outline: 'none' }}
+              >
+                Toutes matières
+              </button>
+              {categories.map(c => (
+                <button 
+                  key={c}
+                  onClick={() => {
+                    setMaterialCategory(c);
+                    setSelectedCategoryInfo(c);
+                  }}
+                  style={{ cursor: 'pointer', padding: '8px 12px', fontSize: 12, borderRadius: 8, border: '1px solid #1a2540', background: materialCategory === c ? '#38bdf8' : '#111c30', color: materialCategory === c ? '#000' : '#e2e8f0', fontWeight: 600, transition: 'all 0.2s', outline: 'none' }}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div style={{ marginBottom: 20 }}>
@@ -463,6 +476,50 @@ export default function DirectoryPage() {
                     <div style={{ fontSize: 18, fontWeight: 800, color: '#38bdf8', marginTop: 6 }}>Actif & Certifié</div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Spectacular Category Info Modal */}
+      {selectedCategoryInfo && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 11000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(10px)', padding: 40 }}>
+          <motion.div 
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            style={{ width: '100%', maxWidth: 1000, background: '#ffffff', borderRadius: 24, overflow: 'hidden', boxShadow: '0 40px 80px rgba(0,0,0,0.15)', display: 'flex', flexDirection: 'column' }}
+          >
+            <div style={{ padding: '24px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9' }}>
+              <h2 style={{ fontSize: 28, fontWeight: 900, color: '#0f172a', margin: 0 }}>
+                Filière : <span style={{ color: '#38bdf8' }}>{selectedCategoryInfo}</span>
+              </h2>
+              <button onClick={() => setSelectedCategoryInfo(null)} style={{ background: '#f1f5f9', border: 'none', width: 40, height: 40, borderRadius: '50%', color: '#0f172a', fontSize: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='#e2e8f0'} onMouseOut={e=>e.currentTarget.style.background='#f1f5f9'}>✕</button>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'row', minHeight: 450 }}>
+              <div style={{ flex: 1, padding: 40, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                <h3 style={{ fontSize: 24, fontWeight: 800, color: '#1e293b', marginBottom: 16 }}>Analyse de la Filière {selectedCategoryInfo}</h3>
+                <p style={{ fontSize: 16, color: '#64748b', lineHeight: 1.8, marginBottom: 32 }}>
+                  La filière <strong>{selectedCategoryInfo}</strong> représente un pilier stratégique de l'économie circulaire au Cameroun. Son intégration systématique dans la boucle de valorisation permet une réduction drastique de l'extraction de matières premières vierges, favorisant l'indépendance industrielle et la préservation des écosystèmes locaux. SymbioNexus suit et certifie rigoureusement les volumes de cette matière traités par les acteurs du réseau national.
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+                  <div style={{ background: '#f8fafc', padding: 20, borderRadius: 16, border: '1px solid #e2e8f0' }}>
+                    <div style={{ fontSize: 13, color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700 }}>Acteurs Actifs</div>
+                    <div style={{ fontSize: 24, fontWeight: 900, color: '#10b981', marginTop: 8 }}>+15 Partenaires</div>
+                  </div>
+                  <div style={{ background: '#f8fafc', padding: 20, borderRadius: 16, border: '1px solid #e2e8f0' }}>
+                    <div style={{ fontSize: 13, color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700 }}>Potentiel de Recyclage</div>
+                    <div style={{ fontSize: 24, fontWeight: 900, color: '#38bdf8', marginTop: 8 }}>Taux : 92%</div>
+                  </div>
+                </div>
+              </div>
+              <div style={{ flex: 1, position: 'relative', borderLeft: '1px solid #f1f5f9', background: '#fff' }}>
+                <img 
+                  src={`https://image.pollinations.ai/prompt/Professional%20photograph%20of%20${encodeURIComponent(selectedCategoryInfo)}%20raw%20material%20recycling%20clean%20pure%20white%20background%20high%20quality%20corporate%20dramatic%20lighting?width=600&height=500&nologo=true`}
+                  alt={selectedCategoryInfo}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
               </div>
             </div>
           </motion.div>

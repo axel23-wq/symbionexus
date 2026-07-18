@@ -1,15 +1,19 @@
 'use client';
 
-import { useEffect, useReducer, useRef, useState } from 'react';
+import { useEffect, useReducer, useRef, useState, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import ChatWindow from './ChatWindow';
 import MessageInput from './MessageInput';
 import FileUploadZone from './FileUploadZone';
 import VoiceRecorder from './VoiceRecorder';
+import AISettings from './AISettings';
+import ConversationHistory from './ConversationHistory';
 import { AIPanelState, Message } from './types';
 import { useAIStreamConnection } from './useAIStreamConnection';
+import { useConversationStorage, StoredConversation } from './useConversationStorage';
 import { detectModuleFromPath } from '@/lib/module-detector';
 import styles from './AIPanel.module.css';
+import jsPDF from 'jspdf';
 
 const MODULE_SUGGESTIONS: { [key: string]: string[] } = {
   marketplace: [
@@ -60,7 +64,10 @@ type Action =
   | { type: 'UPDATE_LAST_MESSAGE'; payload: string }
   | { type: 'CLEAR_MESSAGES' }
   | { type: 'SET_MODULE'; payload: string }
-  | { type: 'SET_DEMO_MODE'; payload: boolean };
+  | { type: 'SET_DEMO_MODE'; payload: boolean }
+  | { type: 'RESET_CONVERSATION' }
+  | { type: 'SET_MESSAGES'; payload: Message[] }
+  | { type: 'SET_CONVERSATION_ID'; payload: string };
 
 interface DragState {
   isDragging: boolean;
@@ -93,6 +100,18 @@ function reducer(state: AIPanelState, action: Action): AIPanelState {
       return { ...state, selectedModule: action.payload };
     case 'SET_DEMO_MODE':
       return { ...state, demoMode: action.payload };
+    case 'RESET_CONVERSATION':
+      return {
+        ...state,
+        messages: [],
+        currentInput: '',
+        isLoading: false,
+        conversationId: Math.random().toString(36).substring(7),
+      };
+    case 'SET_MESSAGES':
+      return { ...state, messages: action.payload };
+    case 'SET_CONVERSATION_ID':
+      return { ...state, conversationId: action.payload };
     default:
       return state;
   }
@@ -101,6 +120,7 @@ function reducer(state: AIPanelState, action: Action): AIPanelState {
 export default function AIPanel() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const { sendMessage } = useAIStreamConnection();
+  const { conversations, saveConversation, deleteConversation } = useConversationStorage();
   const pathname = usePathname();
   const panelRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -117,11 +137,41 @@ export default function AIPanel() {
   const [demoMode, setDemoMode] = useState(false);
   const [showFileUpload, setShowFileUpload] = useState(false);
   const [voiceRecordingBlob, setVoiceRecordingBlob] = useState<Blob | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   useEffect(() => {
     const module = detectModuleFromPath(pathname);
     dispatch({ type: 'SET_MODULE', payload: module });
   }, [pathname]);
+
+  // Save conversation to history when messages change
+  useEffect(() => {
+    if (state.messages.length > 0) {
+      saveConversation(state.conversationId, state.messages);
+    }
+  }, [state.messages, state.conversationId, saveConversation]);
+
+  const handleLoadConversation = useCallback(
+    (conversation: StoredConversation) => {
+      dispatch({ type: 'SET_MESSAGES', payload: conversation.messages });
+      dispatch({ type: 'SET_CONVERSATION_ID', payload: conversation.conversationId });
+      dispatch({ type: 'SET_INPUT', payload: '' });
+      setHistoryOpen(false);
+    },
+    []
+  );
+
+  const handleDeleteConversation = useCallback(
+    (conversationId: string) => {
+      deleteConversation(conversationId);
+    },
+    [deleteConversation]
+  );
+
+  const handleNewConversation = useCallback(() => {
+    dispatch({ type: 'RESET_CONVERSATION' });
+  }, []);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!panelRef.current) return;
@@ -262,6 +312,125 @@ export default function AIPanel() {
     }
   };
 
+  const exportToTXT = () => {
+    const content = state.messages
+      .map((msg) => `${msg.role.toUpperCase()}: ${msg.content}`)
+      .join('\n\n---\n\n');
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `conversation-${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const exportToJSON = () => {
+    const exportData = {
+      exportDate: new Date().toISOString(),
+      conversationId: state.conversationId,
+      messageCount: state.messages.length,
+      messages: state.messages,
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+      type: 'application/json',
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `conversation-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const exportToPDF = () => {
+    try {
+      const pdf = new jsPDF();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const margin = 10;
+      const maxWidth = pageWidth - 2 * margin;
+      let yPosition = margin;
+
+      // Title
+      pdf.setFontSize(16);
+      pdf.text('SymbioNexus AI Conversation', margin, yPosition);
+      yPosition += 10;
+
+      // Metadata
+      pdf.setFontSize(10);
+      pdf.text(
+        `Exported: ${new Date().toLocaleString()}`,
+        margin,
+        yPosition
+      );
+      yPosition += 5;
+      pdf.text(
+        `Messages: ${state.messages.length}`,
+        margin,
+        yPosition
+      );
+      yPosition += 10;
+
+      // Messages
+      pdf.setFontSize(11);
+      state.messages.forEach((msg) => {
+        const roleLabel = `${msg.role.toUpperCase()}:`;
+        const lines = pdf.splitTextToSize(
+          `${roleLabel}\n${msg.content}`,
+          maxWidth
+        );
+
+        lines.forEach((line: string) => {
+          if (yPosition > pageHeight - margin) {
+            pdf.addPage();
+            yPosition = margin;
+          }
+          pdf.text(line, margin, yPosition);
+          yPosition += 6;
+        });
+        yPosition += 4;
+      });
+
+      pdf.save(
+        `conversation-${new Date().toISOString().split('T')[0]}.pdf`
+      );
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Failed to generate PDF. Please try again.');
+    }
+  };
+
+  const handleExport = (format: 'pdf' | 'txt' | 'json') => {
+    if (state.messages.length === 0) {
+      alert('No messages to export');
+      return;
+    }
+
+    switch (format) {
+      case 'pdf':
+        exportToPDF();
+        break;
+      case 'txt':
+        exportToTXT();
+        break;
+      case 'json':
+        exportToJSON();
+        break;
+    }
+  };
+
+  const handleClearHistory = () => {
+    dispatch({ type: 'RESET_CONVERSATION' });
+    setSettingsOpen(false);
+  };
+
   const suggestions = MODULE_SUGGESTIONS[state.selectedModule || 'general'] || MODULE_SUGGESTIONS.general;
 
   return (
@@ -284,6 +453,26 @@ export default function AIPanel() {
             transition: drag.isDragging ? 'none' : 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
           }}
         >
+          {/* History Toggle Button */}
+          <button
+            className={styles['history-toggle']}
+            onClick={() => setHistoryOpen(!historyOpen)}
+            title={historyOpen ? 'Close history' : 'Open history'}
+            aria-label="Toggle conversation history"
+          >
+            ≡
+          </button>
+
+          {/* Conversation History Sidebar */}
+          <ConversationHistory
+            conversations={conversations}
+            isOpen={historyOpen}
+            onToggle={() => setHistoryOpen(!historyOpen)}
+            onLoadConversation={handleLoadConversation}
+            onDeleteConversation={handleDeleteConversation}
+            onNewConversation={handleNewConversation}
+          />
+
           {/* Header */}
           <div
             ref={headerRef}
@@ -294,7 +483,13 @@ export default function AIPanel() {
               <span className={styles['header-icon']}>🌿</span>
               <span className={styles['header-title']}>SymbioNexus AI Assistant</span>
             </div>
-            <button className={styles['header-settings']} title="Settings">⚙️</button>
+            <button
+              className={styles['header-settings']}
+              title="Settings"
+              onClick={() => setSettingsOpen(true)}
+            >
+              ⚙️
+            </button>
           </div>
 
           {/* Tool Toolbar Left */}
@@ -403,6 +598,15 @@ export default function AIPanel() {
           </div>
         </div>
       )}
+
+      {/* Settings Modal */}
+      <AISettings
+        isOpen={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        onExport={handleExport}
+        onClearHistory={handleClearHistory}
+        messages={state.messages}
+      />
     </>
   );
 }
